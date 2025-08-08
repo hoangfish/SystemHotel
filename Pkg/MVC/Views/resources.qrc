@@ -1,0 +1,37 @@
+<RCC>
+    <qresource prefix="/Pkg/MVC/Views">
+        <file>main.qml</file>
+        <file>MainIntro.qml</file>
+        <file>Login.qml</file>
+        <file>Booking.qml</file>
+        <file>Payment.qml</file>
+        <file>BookingHistory.qml</file>
+        <file>CustomerList.qml</file>
+        <file>ImageSlider.qml</file>
+        <file>images/school_logo.png</file>
+        <file>images/lobby.png</file>
+        <file>images/outside_look.png</file>
+        <file>images/room1.png</file>
+        <file>images/room2.png</file>
+        <file>images/room3.png</file>
+        <file>images/room4.png</file>
+        <file>images/room5.png</file>
+        <file>images/room6.png</file>
+        <file>images/room7.png</file>
+        <file>images/room8.png</file>
+        <file>images/room9.png</file>
+        <file>images/room10.png</file>
+        <file>images/room11.png</file>
+        <file>images/room12.png</file>
+        <file>images/room13.png</file>
+        <file>images/room14.png</file>
+        <file>images/room15.png</file>
+        <file>images/room16.png</file>
+        <file>images/room17.png</file>
+        <file>images/pool.png</file>
+        <file>images/wifi.png</file>
+        <file>images/restaurant.png</file>
+        <file>images/spa.png</file>
+        <file>images/banner_background.png</file>
+    </qresource>
+</RCC>
