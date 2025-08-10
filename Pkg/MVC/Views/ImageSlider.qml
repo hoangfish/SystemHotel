@@ -19,7 +19,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top   // ✅ thêm dòng này
-        height: slideHeight       // ✅ đảm bảo chiều cao cố định
+        height: slideHeight 
 
         contentWidth: slideWidth * images.length
         contentHeight: slideHeight

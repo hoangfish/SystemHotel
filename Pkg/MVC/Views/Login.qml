@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+//import QUANLYKHACHSAN 1.0
 
 Item {
     id: loginPage
@@ -73,6 +74,7 @@ Item {
 
                     MouseArea {
                         anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: isEmailMode = true
                     }
                 }
@@ -93,6 +95,7 @@ Item {
 
                     MouseArea {
                         anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: isEmailMode = false
                     }
                 }
@@ -123,15 +126,19 @@ Item {
                     radius: 8
                 }
                 contentItem: Text {
-                    text: "Đăng nhập"
+                    text: parent.text
                     anchors.centerIn: parent
                     color: "white"
                     font.pixelSize: 16
                     font.bold: true
                 }
                 onClicked: {
-                    console.log("Logging in with:", usernameInput.text, passwordInput.text)
-                    loginSuccess()
+                    if (usernameInput.text === "" || passwordInput.text === "") {
+                        errorDialog.text = "Vui lòng nhập email/số điện thoại và mật khẩu";
+                        errorDialog.open();
+                    } else {
+                        UserController.loginUser(usernameInput.text, passwordInput.text);
+                    }
                 }
             }
 
@@ -220,12 +227,14 @@ Item {
                 spacing: 10
 
                 TextField {
+                    id: firstNameInput
                     placeholderText: "Tên"
                     Layout.fillWidth: true
                     font.pixelSize: 16
                 }
 
                 TextField {
+                    id: lastNameInput
                     placeholderText: "Họ"
                     Layout.fillWidth: true
                     font.pixelSize: 16
@@ -233,18 +242,21 @@ Item {
             }
 
             TextField {
+                id: phoneInput
                 placeholderText: "Số điện thoại"
                 Layout.fillWidth: true
                 font.pixelSize: 16
             }
 
             TextField {
+                id: emailInput
                 placeholderText: "Email"
                 Layout.fillWidth: true
                 font.pixelSize: 16
             }
 
             TextField {
+                id: registerPasswordInput
                 placeholderText: "Mật khẩu"
                 echoMode: TextInput.Password
                 Layout.fillWidth: true
@@ -260,15 +272,26 @@ Item {
                     radius: 8
                 }
                 contentItem: Text {
-                    text: "Đăng ký"
+                    text: parent.text
                     anchors.centerIn: parent
                     color: "white"
                     font.pixelSize: 16
                     font.bold: true
                 }
                 onClicked: {
-                    console.log("Register button clicked")
-                    loginSuccess()  // 👉 Gọi signal này để main.qml chuyển sang Booking.qml
+                    if (firstNameInput.text === "" || lastNameInput.text === "" ||
+                        phoneInput.text === "" || emailInput.text === "" || registerPasswordInput.text === "") {
+                        errorDialog.text = "Vui lòng nhập đầy đủ thông tin";
+                        errorDialog.open();
+                    } else {
+                        UserController.registerUser(
+                            firstNameInput.text,
+                            lastNameInput.text,
+                            emailInput.text,
+                            phoneInput.text,
+                            registerPasswordInput.text
+                        )
+                    }
                 }
             }
 
@@ -284,6 +307,68 @@ Item {
                 opacity: 0.6
                 Layout.alignment: Qt.AlignHCenter
             }
+        }
+    }
+
+    // === ERROR DIALOG ===
+    Dialog {
+        id: errorDialog
+        modal: true
+        focus: true
+        title: "Lỗi"
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        width: 300
+        property alias text: errorText.text
+
+        contentItem: Rectangle {
+            color: "#ffffff"
+            radius: 8
+            border.color: "#ccc"
+            border.width: 1
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 12
+
+                Text {
+                    id: errorText
+                    font.pixelSize: 14
+                    color: "#333"
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    text: "OK"
+                    Layout.fillWidth: true
+                    onClicked: errorDialog.close()
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: UserController
+        function onLoginSuccess(firstName, lastName) {
+            console.log("Login successful for:", firstName, lastName);
+            loginSuccess();
+        }
+        function onLoginFailed(errorMsg) {
+            errorDialog.text = errorMsg;
+            errorDialog.open();
+        }
+        function onRegisterSuccess() {
+            console.log("Register successful");
+            registerForm.visible = false;
+            loginForm.visible = true;
+            errorDialog.text = "Đăng ký thành công, vui lòng đăng nhập";
+            errorDialog.open();
+        }
+        function onRegisterFailed(errorMsg) {
+            errorDialog.text = errorMsg;
+            errorDialog.open();
         }
     }
 }

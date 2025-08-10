@@ -354,7 +354,149 @@ Page {
                 }
             }
 
-            // 4. DỊCH VỤ - giữ lại cấu trúc 2 ảnh trên 2 ảnh dưới, căn đều và gọn
+            // 4. ẨM THỰC & NHÀ HÀNG
+            RowLayout {
+                id: foodSection
+                Layout.fillWidth: true
+                spacing: 24
+
+                // 2 ảnh bên trái
+                ColumnLayout {
+                    spacing: 12
+                    Rectangle {
+                        width: 400
+                        height: 180
+                        color: "transparent"
+                        Image {
+                            anchors.fill: parent
+                            source: "qrc:/Pkg/MVC/Views/images/buffet.png"
+                            fillMode: Image.PreserveAspectCrop
+                        }
+                    }
+                    Rectangle {
+                        width: 400
+                        height: 180
+                        color: "transparent"
+                        Image {
+                            anchors.fill: parent
+                            source: "qrc:/Pkg/MVC/Views/images/freshseafood.png"
+                            fillMode: Image.PreserveAspectCrop
+                        }
+                    }
+                }
+
+                // Thông tin bên phải
+                ColumnLayout {
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 420
+
+                    Label {
+                        text: "4. ẨM THỰC & NHÀ HÀNG"
+                        font.pixelSize: 24
+                        font.bold: true
+                        font.family: "Segoe UI"
+                        color: "#333333"
+                    }
+
+                    Label {
+                        text: "-Thưởng thức buffet đa dạng món Á – Âu, nguyên liệu tươi ngon."
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 16
+                        font.family: "Segoe UI"
+                        color: "#444444"
+                    }
+
+                    Label {
+                        text: "-Đặc biệt các món hải sản tươi sống chế biến ngay tại quầy."
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 16
+                        font.family: "Segoe UI"
+                        color: "#444444"
+                    }
+
+                    Label {
+                        text: "-Không gian nhà hàng sang trọng, phục vụ tận tâm."
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 16
+                        font.family: "Segoe UI"
+                        color: "#444444"
+                    }
+                }
+            }
+
+            // 5. HOẠT ĐỘNG & GIẢI TRÍ
+            RowLayout {
+                id: activitySection
+                Layout.fillWidth: true
+                spacing: 24
+
+                // Thông tin bên trái
+                ColumnLayout {
+                    spacing: 10
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 420
+
+                    Label {
+                        text: "5. HOẠT ĐỘNG & GIẢI TRÍ"
+                        font.pixelSize: 24
+                        font.bold: true
+                        font.family: "Segoe UI"
+                        color: "#333333"
+                    }
+
+                    Label {
+                        text: "-Phòng gym hiện đại, trang thiết bị tân tiến đầy đủ."
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 16
+                        font.family: "Segoe UI"
+                        color: "#444444"
+                    }
+
+                    Label {
+                        text: "-Quầy bar ngoài trời với các loại cocktail độc đáo."
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 16
+                        font.family: "Segoe UI"
+                        color: "#444444"
+                    }
+
+                    Label {
+                        text: "-Các hoạt động giải trí phù hợp cho mọi lứa tuổi."
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: 16
+                        font.family: "Segoe UI"
+                        color: "#444444"
+                    }
+                }
+
+                // 2 ảnh bên phải
+                ColumnLayout {
+                    spacing: 12
+                    Rectangle {
+                        width: 400
+                        height: 180
+                        color: "transparent"
+                        Image {
+                            anchors.fill: parent
+                            source: "qrc:/Pkg/MVC/Views/images/gym.png"
+                            fillMode: Image.PreserveAspectCrop
+                        }
+                    }
+                    Rectangle {
+                        width: 400
+                        height: 180
+                        color: "transparent"
+                        Image {
+                            anchors.fill: parent
+                            source: "qrc:/Pkg/MVC/Views/images/outdoorbar.png"
+                            fillMode: Image.PreserveAspectCrop
+                        }
+                    }
+                }
+            }
+
+            // 6. DỊCH VỤ - giữ lại cấu trúc 2 ảnh trên 2 ảnh dưới, căn đều và gọn
             ColumnLayout {
                 id: serviceSection
                 spacing: 10
