@@ -6,6 +6,7 @@
 #include "Common/constant.h"
 #include "Logger/inc/logger.h"
 #include "MVC/Controller/inc/UserController.h"
+#include "MVC/Controller/inc/RoomController.h"
 #include "SocketIO/inc/NotiCtrl.h"
 // int main(int argc, char *argv[])
 // {
@@ -31,11 +32,13 @@ int main(int argc, char *argv[]) {
     QQuickStyle::setStyle("Material");
     // <======================== START BOOTING APP ========================>
     LOG(LogLevel::INFO, "Start app");
-
     // register object C++
     engine.rootContext()->setContextProperty("UserController", UserController::getInstance());
-    engine.rootContext()->setContextProperty("UserModel", UserController::getInstance()->getUserModel());
+    //engine.rootContext()->setContextProperty("UserModel", UserController::getInstance()->getUserModel());
+    engine.rootContext()->setContextProperty("RoomController", RoomController::getInstance());
+
     engine.rootContext()->setContextProperty("NotiService", &NotiCtrl::getInstance());
+
 
     engine.load(QUrl(QStringLiteral("qrc:/Pkg/MVC/Views/main.qml")));
 

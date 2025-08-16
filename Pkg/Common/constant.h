@@ -2,7 +2,7 @@
 #define CONSTANTS_H
 
 #define URL_SERVER_BACKEND "http://127.0.0.1:3000"
-
+#define URL_SERVER_SOCKET "http://127.0.0.1:3001"
 #define URL_USER_REGISTER \
     URL_SERVER_BACKEND    \
     "/api/v1/users/register"
@@ -17,6 +17,18 @@
 
 #define URL_BOOKING_HISTORY \
     URL_SERVER_BACKEND      \
-    "/api/v1/bookings/"
+    "/api/v1/users/"
+
+#define URL_ROOMS \
+    URL_SERVER_BACKEND \
+    "/api/v1/rooms"
+
+#define URL_USERUPDATE \
+    URL_SERVER_BACKEND \
+    "/api/v1/users/update"
+
+#define URL_ROOMSUPDATE \
+    URL_SERVER_BACKEND \
+    "/api/v1/rooms/update"
 
 #endif

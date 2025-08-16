@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-//import QUANLYKHACHSAN 1.0
 
 Item {
     id: root
@@ -13,53 +12,111 @@ Item {
     LayoutMirroring.enabled: false
     LayoutMirroring.childrenInherit: true
 
+    // Properties for dates and calculations
+    property string checkInDate: ""
+    property string checkOutDate: ""
+    property int nights: 0
+    property double totalPrice: 0
+    property StackView stackViewRef
+
     // == DỮ LIỆU PHÒNG ==
     ListModel {
         id: roomModel
-        ListElement {
-            name: "Muong Thanh Lite Queen"
-            image: "qrc:/Pkg/MVC/Views/images/room1.png"
-            price: "972.000₫"
-            originalPrice: "1.080.000₫"
-            desc: "Giường Queen size • Không hút thuốc • Smart TV • Wifi tốc độ cao • Mini Bar"
-            guests: "2 khách"
-            area: "20 m²"
+    }
+
+    // == PHÒNG ĐƯỢC CHỌN ==
+    property var selectedRoom: ({})
+
+    Component.onCompleted: {
+        RoomController.getRooms();
+    }
+
+    Connections {
+        target: RoomController
+        function onRoomsFetched(rooms) {
+            roomModel.clear();
+            for (var i = 0; i < rooms.length; i++) {
+                roomModel.append(rooms[i]);
+            }
         }
-        ListElement {
-            name: "Muong Thanh Lite+ Queen"
-            image: "qrc:/Pkg/MVC/Views/images/room2.png"
-            price: "1.350.000₫"
-            originalPrice: "1.500.000₫"
-            desc: "Giường Queen size • Thú cưng ok • Máy sấy tóc • Không hút thuốc"
-            guests: "2 khách"
-            area: "20 m²"
+        function onRoomFetchFailed(errorMsg) {
+            console.log("Failed to fetch rooms:", errorMsg);
+            errorDialog.text = errorMsg;
+            errorDialog.open();
         }
-        ListElement {
-            name: "Muong Thanh Family Room"
-            image: "qrc:/Pkg/MVC/Views/images/room3.png"
-            price: "1.980.000₫"
-            originalPrice: "2.200.000₫"
-            desc: "2 Giường đôi • Bếp nhỏ • Cửa sổ lớn • View thành phố"
-            guests: "4 khách"
-            area: "35 m²"
+        function onRoomSelected(room) {
+            selectedRoom = room;
+            console.log("Selected room:", room.roomId, room.roomNumber);
         }
-        ListElement {
-            name: "Muong Thanh Premium"
-            image: "qrc:/Pkg/MVC/Views/images/room4.png"
-            price: "2.400.000₫"
-            originalPrice: "2.650.000₫"
-            desc: "Giường King • Máy pha cà phê • Ban công riêng • Bồn tắm"
-            guests: "2 khách"
-            area: "40 m²"
+        function onRoomBooked() {
+            console.log("Room booked successfully");
+            errorDialog.text = "Đặt phòng " + selectedRoom.roomNumber + " thành công!";
+            errorDialog.open();
+            RoomController.getRooms();
         }
-        ListElement {
-            name: "Muong Thanh Suite"
-            image: "qrc:/Pkg/MVC/Views/images/room5.png"
-            price: "3.200.000₫"
-            originalPrice: "3.500.000₫"
-            desc: "Phòng suite rộng rãi • Phòng khách riêng • View biển • Bếp nhỏ"
-            guests: "3 khách"
-            area: "55 m²"
+        function onRoomBookingFailed(errorMsg) {
+            console.log("Room booking failed:", errorMsg);
+            errorDialog.text = errorMsg;
+            errorDialog.open();
+        }
+    }
+
+    // Function to calculate nights and total
+    function calculateNights() {
+        if (checkInInput.text && checkOutInput.text) {
+            let inDate = Date.fromLocaleString(Qt.locale(), checkInInput.text, "dd/MM/yyyy");
+            let outDate = Date.fromLocaleString(Qt.locale(), checkOutInput.text, "dd/MM/yyyy");
+            if (!isNaN(inDate) && !isNaN(outDate) && outDate > inDate) {
+                nights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24));
+                totalPrice = selectedRoom.price * nights;
+                checkInDate = Qt.formatDate(inDate, "yyyy-MM-dd");
+                checkOutDate = Qt.formatDate(outDate, "yyyy-MM-dd");
+            } else {
+                nights = 0;
+                totalPrice = 0;
+            }
+        } else {
+            nights = 0;
+            totalPrice = 0;
+        }
+    }
+
+    // == ERROR DIALOG ==
+    Dialog {
+        id: errorDialog
+        modal: true
+        focus: true
+        title: "Thông báo"
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        width: 300
+        property alias text: errorText.text
+
+        contentItem: Rectangle {
+            color: "#ffffff"
+            radius: 8
+            border.color: "#ccc"
+            border.width: 1
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 12
+
+                Text {
+                    id: errorText
+                    font.pixelSize: 14
+                    color: "#333"
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    text: "OK"
+                    Layout.fillWidth: true
+                    onClicked: errorDialog.close()
+                }
+            }
         }
     }
 
@@ -94,8 +151,8 @@ Item {
                 border.width: 1
                 Text {
                     anchors.centerIn: parent
-                    text: UserModel.firstName && UserModel.lastName ? 
-                          UserModel.firstName[0].toUpperCase() + UserModel.lastName[0].toUpperCase() : "NA"
+                    text: UserController.getFirstName() && UserController.getLastName() ? 
+                          UserController.getFirstName()[0].toUpperCase() + UserController.getLastName()[0].toUpperCase() : "NA"
                     color: "#880e4f"
                     font.bold: true
                 }
@@ -147,7 +204,7 @@ Item {
     Rectangle {
         id: bookingSummary
         width: 320
-        height: 280
+        height: 320
         radius: 8
         color: "#fafafa"
         border.color: "#ddd"
@@ -179,46 +236,6 @@ Item {
 
             Rectangle {
                 Layout.fillWidth: true
-                height: 36
-                color: "#fff3f3"
-                Text {
-                    anchors.centerIn: parent
-                    text: "1 đêm"
-                    font.pixelSize: 14
-                    font.bold: true
-                    color: "#333"
-                }
-            }
-
-            Item { Layout.preferredHeight: 0 }
-
-            ColumnLayout {
-                spacing: 2
-                RowLayout {
-                    spacing: 8
-                    Text { text: "9"; font.pixelSize: 20; font.bold: true; color: "#333" }
-                    Text { text: "tháng 8"; font.pixelSize: 14; color: "#333" }
-                    Text { text: "—"; font.pixelSize: 20; color: "#333" }
-                    Text { text: "10"; font.pixelSize: 20; font.bold: true; color: "#333" }
-                    Text { text: "tháng 8"; font.pixelSize: 14; color: "#333" }
-                }
-                RowLayout {
-                    spacing: 12
-                    ColumnLayout {
-                        spacing: 2
-                        Text { text: "Thứ Bảy"; font.pixelSize: 12; color: "#555" }
-                        Text { text: "từ lúc 13:00"; font.pixelSize: 12; color: "#555" }
-                    }
-                    ColumnLayout {
-                        spacing: 2
-                        Text { text: "Chủ Nhật"; font.pixelSize: 12; color: "#555" }
-                        Text { text: "đến 12:30"; font.pixelSize: 12; color: "#555" }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
                 height: 48
                 color: "#fff3f3"
                 RowLayout {
@@ -234,12 +251,86 @@ Item {
                         Layout.alignment: Qt.AlignVCenter
                     }
                     Text {
-                        text: "Muong Thanh Family Room"
+                        text: selectedRoom.roomId || "Chưa chọn phòng"
                         font.pixelSize: 15
                         font.bold: true
                         color: "#7f2f2f"
                         Layout.alignment: Qt.AlignVCenter
                     }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 36
+                color: "#fff3f3"
+                Text {
+                    anchors.centerIn: parent
+                    text: selectedRoom.roomType ? selectedRoom.roomType.charAt(0).toUpperCase() + selectedRoom.roomType.slice(1) : "Chưa chọn loại phòng"
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#333"
+                }
+            }
+
+            // Add date inputs
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                TextField {
+                    id: checkInInput
+                    placeholderText: "Nhận phòng (DD/MM/YYYY)"
+                    Layout.fillWidth: true
+                    onTextChanged: calculateNights()
+                }
+
+                TextField {
+                    id: checkOutInput
+                    placeholderText: "Trả phòng (DD/MM/YYYY)"
+                    Layout.fillWidth: true
+                    onTextChanged: calculateNights()
+                }
+            }
+
+            // Display nights and dates if calculated
+            ColumnLayout {
+                visible: nights > 0
+                spacing: 2
+                RowLayout {
+                    spacing: 8
+                    Text { text: checkInInput.text.split('/')[0]; font.pixelSize: 20; font.bold: true; color: "#333" }
+                    Text { text: "tháng " + checkInInput.text.split('/')[1]; font.pixelSize: 14; color: "#333" }
+                    Text { text: "—"; font.pixelSize: 20; color: "#333" }
+                    Text { text: checkOutInput.text.split('/')[0]; font.pixelSize: 20; font.bold: true; color: "#333" }
+                    Text { text: "tháng " + checkOutInput.text.split('/')[1]; font.pixelSize: 14; color: "#333" }
+                }
+                RowLayout {
+                    spacing: 12
+                    ColumnLayout {
+                        spacing: 2
+                        Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInInput.text, "dd/MM/yyyy"), "dddd"); font.pixelSize: 12; color: "#555" }
+                        Text { text: "từ lúc 14:00"; font.pixelSize: 12; color: "#555" }
+                    }
+                    ColumnLayout {
+                        spacing: 2
+                        Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutInput.text, "dd/MM/yyyy"), "dddd"); font.pixelSize: 12; color: "#555" }
+                        Text { text: "đến 12:30"; font.pixelSize: 12; color: "#555" }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 36
+                color: "#fff3f3"
+                visible: nights > 0
+                Text {
+                    anchors.centerIn: parent
+                    text: nights + " đêm"
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#333"
                 }
             }
 
@@ -252,7 +343,7 @@ Item {
                     anchors.margins: 4
 
                     Text {
-                        text: "2.632.500 ₫"
+                        text: nights > 0 ? totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : (selectedRoom.price ? selectedRoom.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "0 ₫")
                         font.pixelSize: 24
                         font.bold: true
                         color: "#7f2f2f"
@@ -261,23 +352,32 @@ Item {
                     }
 
                     Button {
-                        text: "Tiếp tục  >"
+                        text: "Tiếp tục"
                         font.pixelSize: 22
                         background: Rectangle {
-                            color: "#7f2f2f"
+                            color: selectedRoom.roomId && selectedRoom.status === "available" && nights > 0 ? "#7f2f2f" : "#cccccc"
                             radius: 4
                         }
                         contentItem: Text {
                             text: parent.text
-                            color: "white"
+                            color: selectedRoom.roomId && selectedRoom.status === "available" && nights > 0 ? "white" : "#666666"
                             font.pixelSize: 22
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
                         Layout.fillWidth: true
                         Layout.preferredHeight: 50
+                        enabled: selectedRoom.roomId && selectedRoom.status === "available" && nights > 0
                         onClicked: {
-                            root.continueBooking()
+                            stackViewRef.push("qrc:/Pkg/MVC/Views/Payment.qml", {
+                                selectedRoom: selectedRoom,
+                                checkInDate: checkInDate,
+                                checkOutDate: checkOutDate,
+                                nights: nights,
+                                totalPrice: totalPrice,
+                                stackView: stackViewRef // Thêm stackView để truyền sang Payment.qml
+                            });
+                            continueBooking();
                         }
                     }
                 }
@@ -334,8 +434,19 @@ Item {
                                 id: roomTypeFilter
                                 Layout.preferredWidth: 166
                                 Layout.preferredHeight: 35
-                                model: ["Tùy chọn phòng", "Phòng đơn", "Phòng đôi"]
+                                model: ["Tùy chọn phòng", "single", "double", "family"]
                                 anchors.verticalCenter: parent.verticalCenter
+                                onCurrentTextChanged: {
+                                    if (currentText === "Tùy chọn phòng") {
+                                        for (var i = 0; i < roomModel.count; i++) {
+                                            roomModel.get(i).visible = true;
+                                        }
+                                    } else {
+                                        for (var j = 0; j < roomModel.count; j++) {
+                                            roomModel.get(j).visible = roomModel.get(j).roomType === currentText;
+                                        }
+                                    }
+                                }
                             }
                             ComboBox {
                                 id: viewFilter
@@ -352,7 +463,8 @@ Item {
                         model: roomModel
                         delegate: Rectangle {
                             width: leftColumn.width
-                            height: 220
+                            height: visible ? 220 : 0
+                            visible: true
                             radius: 12
                             color: "#fff"
                             border.color: "#e8e2e2"
@@ -382,13 +494,19 @@ Item {
                                     spacing: 6
 
                                     Text {
-                                        text: name
+                                        text: roomId
                                         font.pixelSize: 20
                                         font.bold: true
                                     }
 
                                     Text {
-                                        text: desc
+                                        text: roomType.charAt(0).toUpperCase() + roomType.slice(1)
+                                        font.pixelSize: 16
+                                        color: "#444"
+                                    }
+
+                                    Text {
+                                        text: description
                                         font.pixelSize: 14
                                         color: "#444"
                                         wrapMode: Text.WordWrap
@@ -404,28 +522,34 @@ Item {
                                         Layout.fillWidth: true
                                         spacing: 16
 
-                                        ColumnLayout {
-                                            spacing: 2
-                                            Text {
-                                                text: originalPrice
-                                                font.pixelSize: 14
-                                                color: "#999"
-                                                font.strikeout: true
-                                            }
-                                            Text {
-                                                text: price
-                                                font.pixelSize: 18
-                                                font.bold: true
-                                                color: "#d32f2f"
-                                            }
+                                        Text {
+                                            text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+                                            font.pixelSize: 18
+                                            font.bold: true
+                                            color: "#d32f2f"
                                         }
 
                                         Item { Layout.fillWidth: true }
 
                                         Button {
-                                            text: "Chọn"
+                                            text: status === "available" ? "Chọn" : "Đã đặt"
                                             width: 100
                                             height: 36
+                                            enabled: status === "available"
+                                            background: Rectangle {
+                                                color: status === "available" ? "#7f2f2f" : "#cccccc"
+                                                radius: 4
+                                            }
+                                            contentItem: Text {
+                                                text: parent.text
+                                                color: status === "available" ? "white" : "#666666"
+                                                font.pixelSize: 14
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+                                            onClicked: {
+                                                RoomController.selectRoom(roomId);
+                                            }
                                         }
                                     }
                                 }
@@ -530,14 +654,14 @@ Item {
                 spacing: 12
 
                 Text {
-                    text: UserModel.firstName && UserModel.lastName ? 
-                          UserModel.firstName + " " + UserModel.lastName : "Guest"
+                    text: UserController.getFirstName() && UserController.getLastName() ? 
+                          UserController.getFirstName() + " " + UserController.getLastName() : "Guest"
                     font.bold: true
                     font.pixelSize: 16
                 }
 
                 Text {
-                    text: UserModel.firstName ? "+84915895157" : "No phone"
+                    text: UserController.getPhone() ? UserController.getPhone() : "No phone"
                     color: "#666"
                     font.pixelSize: 14
                 }
@@ -579,10 +703,12 @@ Item {
         target: UserController
         function onLogoutSuccess() {
             profileDialog.close();
-            stackView.replace("Login.qml");
+            stackViewRef.replace("Login.qml");
         }
         function onLogoutFailed(errorMsg) {
             console.log("Logout failed: " + errorMsg);
+            errorDialog.text = errorMsg;
+            errorDialog.open();
         }
     }
 }

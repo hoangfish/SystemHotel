@@ -5,7 +5,7 @@
 #include <QVariantList>
 #include "Http/inc/httpclientimpl.h"
 #include "../../Models/inc/UserModel.h"
-
+#include "SocketIO/inc/socketioclient.h"
 class UserController : public QObject {
     Q_OBJECT
     static UserController *instance;
@@ -17,6 +17,11 @@ public:
     }
     explicit UserController(QObject *parent = nullptr);
     UserModel* getUserModel() const { return m_userModel; }
+    QString getUserId();
+    Q_INVOKABLE QString getFirstName();
+    Q_INVOKABLE QString getLastName();
+    Q_INVOKABLE QString getEmail();
+    Q_INVOKABLE QString getPhone();
 
     Q_INVOKABLE void registerUser(const QString &firstName, const QString &lastName,
                       const QString &email, const QString &phone,

@@ -26,7 +26,7 @@ ApplicationWindow {
             if (stackView.currentItem && stackView.currentItem.objectName === "Login") {
                 let login = stackView.currentItem
                 login.loginSuccess.connect(() => {
-                    stackView.replace("qrc:/Pkg/MVC/Views/Booking.qml")
+                    stackView.replace("qrc:/Pkg/MVC/Views/Booking.qml", {stackViewRef: stackView})
                 })
             }
 

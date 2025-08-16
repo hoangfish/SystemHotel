@@ -4,11 +4,32 @@
 #include <QJsonArray>
 #include "constant.h"
 #include "Logger/inc/logger.h"
+
 UserController* UserController::instance = nullptr;
 
 UserController::UserController(QObject *parent) : QObject(parent) {
     m_httpClient = HttpClientImpl::getInstance();
     m_userModel = new UserModel(this);
+}
+
+QString UserController::getUserId() {
+    return m_userModel->Id();
+}
+
+QString UserController::getFirstName() {
+    return m_userModel->firstName();
+}
+
+QString UserController::getLastName() {
+    return m_userModel->lastName();
+}
+
+QString UserController::getEmail() {
+    return m_userModel->email();
+}
+
+QString UserController::getPhone() {
+    return m_userModel->phone();
 }
 
 void UserController::registerUser(const QString &firstName, const QString &lastName,
@@ -47,10 +68,19 @@ void UserController::loginUser(const QString &emailOrPhone, const QString &passw
             QJsonObject userObj = obj["data"].toObject();
             QString firstName = userObj["firstName"].toString();
             QString lastName = userObj["lastName"].toString();
+            QString id = userObj["userId"].toString();
+            QString email = userObj["email"].toString();
+            QString phone = userObj["phone"].toString();
             m_userModel->setFirstName(firstName);
             m_userModel->setLastName(lastName);
+            m_userModel->setId(id);
+            m_userModel->setEmail(email);
+            m_userModel->setPhone(phone);
             LOG(LogLevel::INFO, "Login successful and user data updated");
             Q_EMIT loginSuccess(firstName, lastName);
+            auto token = "123";
+            std::map<std::string, std::string> query = {{"token", token}};
+            SocketIoClient::getInstance().connectToServer(URL_SERVER_SOCKET, query);
         } else {
             QString errorMsg = obj["message"].toString();
             LOG(LogLevel::ERROR, "Login failed: " + errorMsg.toStdString());
@@ -61,13 +91,15 @@ void UserController::loginUser(const QString &emailOrPhone, const QString &passw
 
 void UserController::logoutUser() {
     QJsonObject json;
-    // Tạm thời không gửi dữ liệu, vì server chưa yêu cầu token
     m_httpClient->sendPostRequest(QUrl(URL_USER_LOGOUT), json, [=](QByteArray responseData) {
         QJsonDocument doc = QJsonDocument::fromJson(responseData);
         QJsonObject obj = doc.object();
         if (obj["success"].toBool()) {
             m_userModel->setFirstName("");
             m_userModel->setLastName("");
+            m_userModel->setId("");
+            m_userModel->setEmail("");
+            m_userModel->setPhone("");
             LOG(LogLevel::INFO, "Logout request successful");
             Q_EMIT logoutSuccess();
         } else {
@@ -79,7 +111,8 @@ void UserController::logoutUser() {
 }
 
 void UserController::getBookingHistory() {
-    m_httpClient->sendGetRequest(QUrl(URL_BOOKING_HISTORY), [=](QByteArray responseData) {
+    QString url = QString(URL_BOOKING_HISTORY) + m_userModel->Id() + "/bookings";
+    m_httpClient->sendGetRequest(QUrl(url), [=](QByteArray responseData) {
         QJsonDocument doc = QJsonDocument::fromJson(responseData);
         QJsonObject obj = doc.object();
         if (obj["success"].toBool()) {
@@ -87,10 +120,18 @@ void UserController::getBookingHistory() {
             QVariantList bookings;
             for (const QJsonValue &value : bookingsArray) {
                 QJsonObject bookingObj = value.toObject();
+                QString checkIn = QDateTime::fromString(bookingObj["checkInDate"].toString(), Qt::ISODate).toString("dd/MM/yyyy");
+                QString checkOut = QDateTime::fromString(bookingObj["checkOutDate"].toString(), Qt::ISODate).toString("dd/MM/yyyy");
+                QDateTime checkInDate = QDateTime::fromString(bookingObj["checkInDate"].toString(), Qt::ISODate);
+                QDateTime checkOutDate = QDateTime::fromString(bookingObj["checkOutDate"].toString(), Qt::ISODate);
+                int nights = checkInDate.daysTo(checkOutDate);
+                double totalPrice = bookingObj["price"].toDouble() * nights;
                 bookings.append(QVariantMap{
-                    {"room", bookingObj["room"].toString()},
-                    {"date", bookingObj["date"].toString()},
-                    {"status", bookingObj["status"].toString()}
+                    {"bookingId", bookingObj["roomId"].toString() + "-" + checkIn},
+                    {"checkIn", checkIn},
+                    {"checkOut", checkOut},
+                    {"guest", m_userModel->firstName() + " " + m_userModel->lastName()},
+                    {"price", totalPrice}
                 });
             }
             LOG(LogLevel::INFO, "Booking history retrieved successfully");

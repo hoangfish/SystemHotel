@@ -1,79 +1,313 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Window 2.15
 
-ApplicationWindow {
-    visible: true
-    width: 700
-    height: 600
-    title: qsTr("Lịch sử đặt phòng")
-    color: "#f4f4f4"
+Page {
+    id: bookingHistoryPage
+    objectName: "BookingHistory"
 
-    ColumnLayout {
+    property var stackView
+
+    Component.onCompleted: {
+        UserController.getBookingHistory();
+    }
+
+    Connections {
+        target: UserController
+        function onBookingHistorySuccess(bookings) {
+            bookingModel.clear();
+            for (var i = 0; i < bookings.length; i++) {
+                bookingModel.append(bookings[i]);
+            }
+        }
+        function onBookingHistoryFailed(errorMsg) {
+            console.log("Failed to fetch booking history:", errorMsg);
+            errorDialog.text = errorMsg;
+            errorDialog.open();
+        }
+    }
+
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 16
+        color: "#f5f5f5"
 
-        Text {
-            text: "Lịch sử đặt phòng"
-            font.pixelSize: 28
-            font.bold: true
-        }
-
-        ListView {
-            id: historyList
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 12
+        ScrollView {
+            anchors.fill: parent
             clip: true
-            model: ListModel {
-                ListElement {
-                    name: "Nguyễn Văn A"
-                    room: "Phòng đôi"
-                    checkIn: "2025-07-10"
-                    checkOut: "2025-07-12"
-                }
-                ListElement {
-                    name: "Trần Thị B"
-                    room: "Phòng VIP"
-                    checkIn: "2025-07-15"
-                    checkOut: "2025-07-17"
-                }
-                ListElement {
-                    name: "Lê Văn C"
-                    room: "Phòng đơn"
-                    checkIn: "2025-07-18"
-                    checkOut: "2025-07-19"
-                }
-            }
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
-            delegate: Rectangle {
+            Column {
                 width: parent.width
-                height: 100
-                color: "white"
-                radius: 8
-                border.color: "#cccccc"
-                border.width: 1
-                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 20
+                anchors.margins: 24
 
-                Column {
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 4
+                // ===== HEADER =====
+                Rectangle {
+                    id: header
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 60
+                    color: "#d32f2f"
+                    z: 1
 
-                    Text { text: "Khách: " + name; font.pixelSize: 16; font.bold: true }
-                    Text { text: "Phòng: " + room; font.pixelSize: 14 }
-                    Text { text: "Từ: " + checkIn + "  Đến: " + checkOut; font.pixelSize: 14 }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 16
+
+                        Text {
+                            text: "Muong Thanh Luxury HCM"
+                            color: "white"
+                            font.pixelSize: 20
+                            font.bold: true
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        Rectangle {
+                            id: avatar
+                            width: 40
+                            height: 40
+                            radius: 20
+                            color: "#ffebee"
+                            border.color: "#880e4f"
+                            border.width: 1
+                            Text {
+                                anchors.centerIn: parent
+                                text: UserController.getFirstName() && UserController.getLastName() ? 
+                                      UserController.getFirstName()[0].toUpperCase() + UserController.getLastName()[0].toUpperCase() : "NA"
+                                color: "#880e4f"
+                                font.bold: true
+                            }
+                        }
+
+                        Text {
+                            text: UserController.getFirstName() + " " + UserController.getLastName()
+                            font.pixelSize: 14
+                            color: "white"
+                        }
+                    }
+                }
+
+                // ===== TIÊU ĐỀ =====
+                Text {
+                    text: "Lịch sử đặt phòng"
+                    font.pixelSize: 22
+                    font.bold: true
+                    color: "#2c3e50"
+                    horizontalAlignment: Text.AlignHCenter
+                    width: parent.width
+                }
+
+                // ===== HEADER BẢNG =====
+                RowLayout {
+                    width: parent.width
+                    spacing: 20
+
+                    Repeater {
+                        model: ["Booking ID", "Check-in", "Check-out", "Booker", "Price"]
+                        delegate: Text {
+                            text: modelData
+                            font.bold: true
+                            font.pixelSize: 16
+                            color: "#555"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.preferredWidth: {
+                                switch(model.index) {
+                                    case 0: return 100;
+                                    case 1: return 100;
+                                    case 2: return 100;
+                                    case 3: return 120;
+                                    case 4: return 100;
+                                    default: return 100;
+                                }
+                            }
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+
+                // ===== DỮ LIỆU BẢNG =====
+                ListModel {
+                    id: bookingModel
+                }
+
+                Repeater {
+                    model: bookingModel
+
+                    delegate: RowLayout {
+                        width: parent.width
+                        spacing: 20
+                        height: 40
+
+                        Text { text: bookingId; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
+                        Text { text: checkIn; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
+                        Text { text: checkOut; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
+                        Text { text: guest; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 120; Layout.fillWidth: true }
+                        Text { text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }); font.pixelSize: 15; font.bold: true; color: "#c0392b"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
+                    }
+                }
+
+                // ===== FOOTER HÀNH ĐỘNG =====
+                Rectangle {
+                    width: parent.width / 2
+                    height: 44
+                    radius: 4
+                    color: "#ffffff"
+                    border.color: "#ddd"
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 0
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            color: "transparent"
+
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                anchors.leftMargin: 8
+                                spacing: 2
+
+                                Text {
+                                    text: "Muong Thanh Hotel"
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                    color: "#2c3e50"
+                                }
+                                Text {
+                                    text: "Thank you for choosing our services!"
+                                    font.pixelSize: 14
+                                    color: "#555"
+                                }
+                            }
+                        }
+
+                        Button {
+                            width: 120
+                            height: parent.height
+                            background: Rectangle {
+                                color: "#d94a38"
+                                radius: 4
+                            }
+                            contentItem: Text {
+                                text: "Book now"
+                                color: "white"
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                stackView.replace("qrc:/Pkg/MVC/Views/Booking.qml");
+                            }
+                        }
+                    }
+                }
+
+                // ===== FOOTER THÔNG TIN =====
+                Rectangle {
+                    id: footer
+                    width: parent.width
+                    height: 220
+                    color: "#001f3f"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 24
+                        spacing: 48
+
+                        ColumnLayout {
+                            spacing: 8
+                            Label {
+                                text: "fit@hcmus"
+                                color: "#00cc99"
+                                font.pixelSize: 20
+                                font.bold: true
+                            }
+                            Label {
+                                text: "Faculty of Information Technology,\nVNUHCM - University of Science"
+                                color: "#ffffff"
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+
+                        ColumnLayout {
+                            spacing: 8
+                            Label {
+                                text: "Members"
+                                color: "#00cc99"
+                                font.pixelSize: 18
+                                font.bold: true
+                            }
+                            Label { text: "• Phạm Hoàng Phúc"; color: "#ffffff" }
+                            Label { text: "• Nguyễn Trực Phúc"; color: "#ffffff" }
+                            Label { text: "• Nguyễn Khang Hy"; color: "#ffffff" }
+                            Label { text: "• Lê Đinh Nguyên Phong"; color: "#ffffff" }
+                        }
+
+                        ColumnLayout {
+                            spacing: 8
+                            Label {
+                                text: "Contact Us"
+                                color: "#00cc99"
+                                font.pixelSize: 18
+                                font.bold: true
+                            }
+                            Label { text: "📞 0915 895 157"; color: "#ffffff" }
+                            MouseArea {
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Qt.openUrlExternally("mailto:nkhy2414@clc.fitus.edu.vn")
+                                Label {
+                                    text: "✉ nkhy2414@clc.fitus.edu.vn"
+                                    color: "#00ccff"
+                                    font.underline: true
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+    }
 
-        Button {
-            text: "Quay lại"
-            Layout.alignment: Qt.AlignRight
-            onClicked: {
-                console.log("Quay lại dashboard")
+    // ========== ERROR DIALOG ==========
+    Dialog {
+        id: errorDialog
+        modal: true
+        focus: true
+        title: "Thông báo"
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        width: 300
+        property alias text: errorText.text
+
+        contentItem: Rectangle {
+            color: "#ffffff"
+            radius: 8
+            border.color: "#ccc"
+            border.width: 1
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 12
+
+                Text {
+                    id: errorText
+                    font.pixelSize: 14
+                    color: "#333"
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    text: "OK"
+                    Layout.fillWidth: true
+                    onClicked: errorDialog.close()
+                }
             }
         }
     }
