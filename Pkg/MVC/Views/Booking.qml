@@ -27,6 +27,12 @@ Item {
     // == PHÒNG ĐƯỢC CHỌN ==
     property var selectedRoom: ({})
 
+    // Thêm cho phân trang và lọc
+    property string currentFilter: "Tùy chọn phòng"  // Giá trị filter mặc định
+    property int itemsPerPage: 10  // Số phòng mỗi trang
+    property int currentPage: 1    // Trang hiện tại
+    property int totalPages: 0     // Tổng số trang (tính toán sau)
+
     Component.onCompleted: {
         RoomController.getRooms();
     }
@@ -36,8 +42,11 @@ Item {
         function onRoomsFetched(rooms) {
             roomModel.clear();
             for (var i = 0; i < rooms.length; i++) {
-                roomModel.append(rooms[i]);
+                var room = rooms[i];
+                room.visible = true;  // Thêm property visible mặc định true
+                roomModel.append(room);
             }
+            updateVisibleItems();  // Cập nhật visible ngay sau khi load
         }
         function onRoomFetchFailed(errorMsg) {
             console.log("Failed to fetch rooms:", errorMsg);
@@ -79,6 +88,44 @@ Item {
             nights = 0;
             totalPrice = 0;
         }
+    }
+
+    // Hàm mới: Cập nhật visible cho items dựa trên filter và page
+    function updateVisibleItems() {
+        var visibleCount = 0;
+
+        // Loop 1: Đếm tổng số items khớp filter
+        for (var i = 0; i < roomModel.count; i++) {
+            var item = roomModel.get(i);
+            var matchesFilter = (currentFilter === "Tùy chọn phòng" || item.roomType === currentFilter);
+            if (matchesFilter) {
+                visibleCount++;
+            }
+        }
+
+        // Tính tổng trang
+        totalPages = Math.ceil(visibleCount / itemsPerPage);
+        if (totalPages === 0) totalPages = 1;  // Ít nhất 1 trang
+        if (currentPage > totalPages) currentPage = 1;  // Reset nếu cần
+
+        // Reset visibleCount cho page
+        visibleCount = 0;
+        var startIndex = (currentPage - 1) * itemsPerPage;
+        var endIndex = startIndex + itemsPerPage;
+
+        // Loop 2: Set visible chỉ cho items khớp filter và trong range page
+        for (var j = 0; j < roomModel.count; j++) {
+            var item2 = roomModel.get(j);
+            var matchesFilter2 = (currentFilter === "Tùy chọn phòng" || item2.roomType === currentFilter);
+            if (matchesFilter2) {
+                item2.visible = (visibleCount >= startIndex && visibleCount < endIndex);
+                visibleCount++;
+            } else {
+                item2.visible = false;
+            }
+            roomModel.set(j, item2);  // Cập nhật model
+        }
+        console.log("Updated items: totalPages=" + totalPages + ", currentPage=" + currentPage + ", filter=" + currentFilter);
     }
 
     // == ERROR DIALOG ==
@@ -436,16 +483,11 @@ Item {
                                 Layout.preferredHeight: 35
                                 model: ["Tùy chọn phòng", "single", "double", "family"]
                                 anchors.verticalCenter: parent.verticalCenter
+                                currentIndex: 0  // Mặc định chọn "Tùy chọn phòng"
                                 onCurrentTextChanged: {
-                                    if (currentText === "Tùy chọn phòng") {
-                                        for (var i = 0; i < roomModel.count; i++) {
-                                            roomModel.get(i).visible = true;
-                                        }
-                                    } else {
-                                        for (var j = 0; j < roomModel.count; j++) {
-                                            roomModel.get(j).visible = roomModel.get(j).roomType === currentText;
-                                        }
-                                    }
+                                    currentFilter = currentText;
+                                    currentPage = 1;  // Reset về trang 1 khi filter thay đổi
+                                    updateVisibleItems();
                                 }
                             }
                             ComboBox {
@@ -463,8 +505,8 @@ Item {
                         model: roomModel
                         delegate: Rectangle {
                             width: leftColumn.width
-                            height: visible ? 220 : 0
-                            visible: true
+                            height: model.visible ? 220 : 0  // Height 0 nếu không visible
+                            visible: model.visible  // Sử dụng model.visible để lọc
                             radius: 12
                             color: "#fff"
                             border.color: "#e8e2e2"
@@ -553,6 +595,49 @@ Item {
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    // Thêm phân trang ở đây
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 8
+
+                        Button {
+                            text: "Trước"
+                            enabled: currentPage > 1
+                            onClicked: {
+                                currentPage--;
+                                updateVisibleItems();
+                            }
+                        }
+
+                        Repeater {
+                            model: totalPages
+                            Button {
+                                text: (index + 1).toString()
+                                background: Rectangle {
+                                    color: (index + 1 === currentPage) ? "#7f2f2f" : "#f0f0f0"
+                                    radius: 4
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: (index + 1 === currentPage) ? "white" : "#333"
+                                }
+                                onClicked: {
+                                    currentPage = index + 1;
+                                    updateVisibleItems();
+                                }
+                            }
+                        }
+
+                        Button {
+                            text: "Sau"
+                            enabled: currentPage < totalPages
+                            onClicked: {
+                                currentPage++;
+                                updateVisibleItems();
                             }
                         }
                     }
