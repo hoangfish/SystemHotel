@@ -28,7 +28,7 @@ Item {
     property var selectedRoom: ({})
 
     // Thêm cho phân trang và lọc
-    property string currentFilter: "Choose room"  // Giá trị filter mặc định
+    property string currentFilter: "RoomType"  // Giá trị filter mặc định
     property int itemsPerPage: 10  // Số phòng mỗi trang
     property int currentPage: 1    // Trang hiện tại
     property int totalPages: 0     // Tổng số trang (tính toán sau)
@@ -476,26 +476,18 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 16
                             spacing: 16
-                            Layout.alignment: Qt.AlignVCenter
                             ComboBox {
                                 id: roomTypeFilter
                                 Layout.preferredWidth: 166
                                 Layout.preferredHeight: 35
                                 model: ["RoomType", "single", "double", "family"]
-                                anchors.verticalCenter: parent.verticalCenter
                                 currentIndex: 0  // Mặc định chọn "RoomType"
+                                Layout.alignment: Qt.AlignVCenter
                                 onCurrentTextChanged: {
                                     currentFilter = currentText;
                                     currentPage = 1;  // Reset về trang 1 khi filter thay đổi
                                     updateVisibleItems();
                                 }
-                            }
-                            ComboBox {
-                                id: viewFilter
-                                Layout.preferredWidth: 160
-                                Layout.preferredHeight: 35
-                                model: ["View cửa sổ", "View thành phố", "View biển"]
-                                anchors.verticalCenter: parent.verticalCenter
                             }
                             Item { Layout.fillWidth: true }
                         }

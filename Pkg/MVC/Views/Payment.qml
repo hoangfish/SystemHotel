@@ -101,8 +101,8 @@ Page {
                         spacing: 10
 
                         Button {
-                            text: "\u2190 Quay lại chọn phòng" // Sửa text để rõ ràng
-                            onClicked: if (stackView) stackView.pop()
+                            text: "\u2190 Quay lại chọn phòng"
+                            onClicked: if (stackViewRef) stackViewRef.pop()
                         }
 
                         // Spacer to push Label to center
@@ -514,7 +514,7 @@ Page {
         target: UserController
         function onLogoutSuccess() {
             profileDialog.close();
-            stackView.replace("Login.qml");
+            stackViewRef.replace("Login.qml");
         }
         function onLogoutFailed(errorMsg) {
             console.log("Logout failed: " + errorMsg);
@@ -546,10 +546,12 @@ Page {
         modal: true
         focus: true
         title: "Thông báo"
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
         width: 300
         property alias text: errorText.text
+
+        // Tính toán vị trí dựa trên kích thước của mainScroll để căn giữa khu vực nội dung chính
+        x: (mainScroll.width - width) / 2 + mainScroll.x
+        y: (mainScroll.height - height) / 2 + mainScroll.y
 
         contentItem: Rectangle {
             color: "#ffffff"

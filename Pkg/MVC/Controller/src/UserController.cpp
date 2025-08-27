@@ -169,7 +169,7 @@ void UserController::cancelBooking(const QString &bookingCode,const QString&room
         if (obj["success"].toBool()) {
             std::string tmp=action.toStdString();
             LOG(LogLevel::INFO, tmp+" successfully");
-            Q_EMIT bookingCancelled(action);
+            Q_EMIT bookingCancelled(action, roomId);
             //getBookingHistory();
         } else {
             QString errorMsg = obj["message"].toString();

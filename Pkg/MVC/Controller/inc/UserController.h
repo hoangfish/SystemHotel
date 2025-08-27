@@ -41,7 +41,7 @@ Q_SIGNALS:
     void logoutFailed(const QString &errorMsg);
     void bookingHistorySuccess(const QVariantList &bookings);
     void bookingHistoryFailed(const QString &errorMsg);
-    void bookingCancelled(const QString& action);
+    void bookingCancelled(const QString& action, const QString &roomId);
     void cancelFailed(const QString &errorMsg);
 
 private:

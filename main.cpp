@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     //engine.rootContext()->setContextProperty("UserModel", UserController::getInstance()->getUserModel());
     engine.rootContext()->setContextProperty("RoomController", RoomController::getInstance());
 
-    engine.rootContext()->setContextProperty("NotiService", &NotiCtrl::getInstance());
+    //engine.rootContext()->setContextProperty("NotiService", &NotiCtrl::getInstance());
 
 
     engine.load(QUrl(QStringLiteral("qrc:/Pkg/MVC/Views/main.qml")));

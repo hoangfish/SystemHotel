@@ -25,11 +25,14 @@ Page {
             errorDialog.text = errorMsg;
             errorDialog.open();
         }
-        function onBookingCancelled(message) {
-            console.log("Booking action completed successfully:", message);
+        function onBookingCancelled(action, roomId) {
+            //console.log("Booking action completed successfully:", action, roomId);
+            // Định dạng thông báo: "CheckIn phòng roomId thành công"
+            var formattedAction = action.charAt(0).toUpperCase() + action.slice(1); // Viết hoa chữ cái đầu
+            var message = formattedAction + " room " + roomId + " successful";
             errorDialog.text = message;
             errorDialog.open();
-            UserController.getBookingHistory();
+            UserController.getBookingHistory(); // Cập nhật lịch sử đặt phòng
         }
         function onCancelFailed(errorMsg) {
             console.log("Action failed:", errorMsg);
@@ -90,12 +93,11 @@ Page {
                                 color: "#880e4f"
                                 font.bold: true
                             }
-                        }
-
-                        Text {
-                            text: UserController.getFirstName() + " " + UserController.getLastName()
-                            font.pixelSize: 14
-                            color: "white"
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: profileDialog.open()
+                            }
                         }
                     }
                 }
@@ -113,7 +115,7 @@ Page {
                 // ===== HEADER BẢNG =====
                 RowLayout {
                     width: parent.width
-                    spacing: 10
+                    spacing: 5
 
                     Repeater {
                         model: ["Booking ID", "Check-in", "Check-out", "Booker", "Price", "Status"]
@@ -135,7 +137,6 @@ Page {
                                     default: return 100;
                                 }
                             }
-                            Layout.fillWidth: true
                         }
                     }
                 }
@@ -150,7 +151,7 @@ Page {
 
                     delegate: RowLayout {
                         width: parent.width
-                        spacing: 10
+                        spacing: 5
                         height: 40
 
                         Text { 
@@ -160,7 +161,6 @@ Page {
                             horizontalAlignment: Text.AlignHCenter 
                             verticalAlignment: Text.AlignVCenter 
                             Layout.preferredWidth: 150 
-                            Layout.fillWidth: true 
                         }
                         Text { 
                             text: checkIn 
@@ -168,8 +168,7 @@ Page {
                             color: "#333" 
                             horizontalAlignment: Text.AlignHCenter 
                             verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 120 
-                            Layout.fillWidth: true 
+                            Layout.preferredWidth: 140 
                         }
                         Text { 
                             text: checkOut 
@@ -177,8 +176,7 @@ Page {
                             color: "#333" 
                             horizontalAlignment: Text.AlignHCenter 
                             verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 120 
-                            Layout.fillWidth: true 
+                            Layout.preferredWidth: 140 
                         }
                         Text { 
                             text: guest 
@@ -187,7 +185,6 @@ Page {
                             horizontalAlignment: Text.AlignHCenter 
                             verticalAlignment: Text.AlignVCenter 
                             Layout.preferredWidth: 150 
-                            Layout.fillWidth: true 
                         }
                         Text { 
                             text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) 
@@ -197,7 +194,6 @@ Page {
                             horizontalAlignment: Text.AlignHCenter 
                             verticalAlignment: Text.AlignVCenter 
                             Layout.preferredWidth: 120 
-                            Layout.fillWidth: true 
                         }
                         Button {
                             id: actionButton
@@ -255,11 +251,11 @@ Page {
 
                             onClicked: {
                                 if (text === "Huỷ") {
-                                    UserController.cancelBooking(bookingCode,roomId, "cancel")
+                                    UserController.cancelBooking(bookingCode, roomId, "cancel")
                                 } else if (text === "Check In") {
-                                    UserController.cancelBooking(bookingCode,roomId, "checkIn")
+                                    UserController.cancelBooking(bookingCode, roomId, "checkIn")
                                 } else if (text === "Check Out") {
-                                    UserController.cancelBooking(bookingCode,roomId, "checkOut")
+                                    UserController.cancelBooking(bookingCode, roomId, "checkOut")
                                 }
                             }
                         }
@@ -318,7 +314,7 @@ Page {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             onClicked: {
-                                stackViewRef.push("qrc:/Pkg/MVC/Views/Booking.qml",{
+                                stackViewRef.push("qrc:/Pkg/MVC/Views/Booking.qml", {
                                     stackViewRef: stackViewRef
                                 });
                             }
@@ -428,6 +424,85 @@ Page {
                     onClicked: errorDialog.close()
                 }
             }
+        }
+    }
+
+    // ========== PROFILE DIALOG ==========
+    Dialog {
+        id: profileDialog
+        modal: true
+        focus: true
+        x: parent.width - width - 40
+        y: 70
+        width: 340
+        contentItem: Rectangle {
+            width: parent.width
+            color: "#ffffff"
+            radius: 8
+            border.color: "#ccc"
+            border.width: 1
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 12
+
+                Text {
+                    text: UserController.getFirstName() && UserController.getLastName() ? 
+                          UserController.getFirstName() + " " + UserController.getLastName() : "Guest"
+                    font.bold: true
+                    font.pixelSize: 16
+                }
+
+                Text {
+                    text: UserController.getPhone() ? UserController.getPhone() : "No phone"
+                    color: "#666"
+                    font.pixelSize: 14
+                }
+
+                Rectangle {
+                    color: "#fce4ec"
+                    radius: 4
+                    Layout.fillWidth: true
+                    height: 32
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 6
+                        spacing: 6
+                        Text {
+                            text: "\u2714"
+                            font.pixelSize: 14
+                            color: "#c2185b"
+                        }
+                        Text {
+                            text: "Bạn đã nhận được khuyến mãi 10%"
+                            font.pixelSize: 12
+                            color: "#c2185b"
+                        }
+                    }
+                }
+
+                Button {
+                    text: "Đăng xuất"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        UserController.logoutUser();
+                    }
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: UserController
+        function onLogoutSuccess() {
+            profileDialog.close();
+            stackViewRef.replace("Login.qml");
+        }
+        function onLogoutFailed(errorMsg) {
+            console.log("Logout failed: " + errorMsg);
+            errorDialog.text = errorMsg;
+            errorDialog.open();
         }
     }
 }
