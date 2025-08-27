@@ -6,6 +6,7 @@
 #include "Http/inc/httpclientimpl.h"
 #include "../../Models/inc/UserModel.h"
 #include "SocketIO/inc/socketioclient.h"
+
 class UserController : public QObject {
     Q_OBJECT
     static UserController *instance;
@@ -24,11 +25,12 @@ public:
     Q_INVOKABLE QString getPhone();
 
     Q_INVOKABLE void registerUser(const QString &firstName, const QString &lastName,
-                      const QString &email, const QString &phone,
-                      const QString &password);
+                                  const QString &email, const QString &phone,
+                                  const QString &password);
     Q_INVOKABLE void loginUser(const QString &emailOrPhone, const QString &password);
     Q_INVOKABLE void logoutUser();
     Q_INVOKABLE void getBookingHistory();
+    Q_INVOKABLE void cancelBooking(const QString &bookingCode,const QString&roomId,const QString &action);
 
 Q_SIGNALS:
     void registerSuccess();
@@ -39,6 +41,8 @@ Q_SIGNALS:
     void logoutFailed(const QString &errorMsg);
     void bookingHistorySuccess(const QVariantList &bookings);
     void bookingHistoryFailed(const QString &errorMsg);
+    void bookingCancelled(const QString& action);
+    void cancelFailed(const QString &errorMsg);
 
 private:
     HttpClientImpl *m_httpClient;

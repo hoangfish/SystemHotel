@@ -31,4 +31,7 @@
     URL_SERVER_BACKEND \
     "/api/v1/rooms/update"
 
+#define URL_USER_CANCEL \
+    URL_SERVER_BACKEND \
+    "/api/v1/users/cancel"
 #endif

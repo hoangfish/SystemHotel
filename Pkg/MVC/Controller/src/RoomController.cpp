@@ -3,12 +3,22 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QFile>
+#include <QDir>
+#include "matrix.h"
 #include "constant.h"
 #include "Logger/inc/logger.h"
+#include <QUuid>
 
+QString generateBookingCode() {
+    return QUuid::createUuid().toString(QUuid::WithoutBraces).mid(0, 8).toUpper();
+}
 RoomController* RoomController::instance = nullptr;
 
-RoomController::RoomController(QObject *parent) : QObject(parent) {
+RoomController::RoomController(QObject *parent) : QObject(parent), isSubscribeSocket(false) {
     m_httpClient = HttpClientImpl::getInstance();
     m_selectedRoom = new RoomModel(this);
 }
@@ -46,19 +56,16 @@ QString RoomController::downloadImage(const QString& urlString) {
     return "";
 }
 
-void RoomController::setRoomStatus(const QString& roomId) {
+void RoomController::setRoomStatus(const QString& roomId, const QString& newStatus) {
     QVariantList arr = this->getRoomList();
-
     for (int i = 0; i < arr.size(); i++) {
         QVariantMap obj = arr[i].toMap();
-
         if (obj["roomId"].toString() == roomId) {
-            obj["status"] = "booked";
-            arr[i] = obj; 
+            obj["status"] = newStatus;
+            arr[i] = obj;
             break;
         }
     }
-
     this->setRoomList(arr);
 }
 
@@ -89,16 +96,19 @@ void RoomController::getRooms() {
             this->setRoomList(rooms);
             LOG(LogLevel::INFO, "Rooms fetched successfully");
             Q_EMIT roomsFetched(rooms);
-            if (isSubscribeSocket == false)
-            {
+            if (!isSubscribeSocket) {
                 SocketIoClient::getInstance().listenForEvent(
                     SIG_NOTI_ROOMIDCHANGES, [&](sio::event &event) {
-                        std::string roomId = event.get_message()->get_string();
+                        sio::message::ptr msg = event.get_message();
+                        std::string roomIdStr = msg->get_map()["roomId"]->get_string();
+                        std::string newStatusStr = msg->get_map()["newStatus"]->get_string();
                         LOG(LogLevel::INFO, "Received event: " + event.get_name() +
-                                ", roomId: " + roomId);
-                        QString tmpId=QString::fromStdString(roomId);
-                        setRoomStatus(tmpId);
+                                ", roomId: " + roomIdStr + ", newStatus: " + newStatusStr);
+                        QString tmpId = QString::fromStdString(roomIdStr);
+                        QString tmpStatus = QString::fromStdString(newStatusStr);
+                        setRoomStatus(tmpId, tmpStatus);
                     });
+                isSubscribeSocket = true;
             }
         } else {
             QString errorMsg = obj["message"].toString();
@@ -160,30 +170,29 @@ void RoomController::selectRoom(const QString &roomId) {
 void RoomController::bookRoom(const QString &roomId, const QString &checkInDate, const QString &checkOutDate) {
     QString userId = UserController::getInstance()->getUserId();
     QJsonObject json;
+    json["bookingCode"] = generateBookingCode();
     json["roomId"] = roomId;
     json["userId"] = userId;
     json["checkInDate"] = checkInDate;
     json["checkOutDate"] = checkOutDate;
-    qDebug()<<roomId;
 
-    // Gọi API để thêm phòng vào RoomList của user
     m_httpClient->sendPostRequest(QUrl(URL_USERUPDATE), json, [=](QByteArray responseData) {
         QJsonDocument doc = QJsonDocument::fromJson(responseData);
         QJsonObject obj = doc.object();
         if (obj["success"].toBool()) {
-            // Cập nhật trạng thái phòng thành "booked"
             QJsonObject updateJson;
             updateJson["status"] = "booked";
             m_httpClient->sendPostRequest(QUrl(QString(URL_ROOMSUPDATE) + "/" + roomId), updateJson, [=](QByteArray updateResponse) {
                 QJsonDocument updateDoc = QJsonDocument::fromJson(updateResponse);
                 QJsonObject updateObj = updateDoc.object();
                 if (updateObj["success"].toBool()) {
-
                     LOG(LogLevel::INFO, "Room booked and status updated successfully: " + roomId.toStdString());
                     Q_EMIT roomBooked();
-                    LOG(LogLevel::INFO, "Token room status " + roomId.toStdString());
                     sio::message::list msgSended;
-                    msgSended.push(sio::string_message::create(roomId.toStdString()));
+                    auto map = sio::object_message::create();
+                    map->get_map()["roomId"] = sio::string_message::create(roomId.toStdString());
+                    map->get_map()["newStatus"] = sio::string_message::create("booked");
+                    msgSended.push(map);
                     SocketIoClient::getInstance().emitEvent(SIG_NOTI_UPDATESTATUS, msgSended);
                 } else {
                     QString errorMsg = updateObj["message"].toString();

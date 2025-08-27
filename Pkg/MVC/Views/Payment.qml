@@ -7,7 +7,7 @@ Page {
     id: paymentPage
     objectName: "Payment"
 
-    property var stackView
+    property StackView stackViewRef
     property var selectedRoom
     property string checkInDate
     property string checkOutDate
@@ -527,8 +527,8 @@ Page {
         target: RoomController
         function onRoomBooked() {
             console.log("Room booked successfully");
-            stackView.push("qrc:/Pkg/MVC/Views/BookingHistory.qml", {
-                stackView: stackView // Truyền stackView cho BookingHistory
+            stackViewRef.push("qrc:/Pkg/MVC/Views/BookingHistory.qml", {
+                stackViewRef: stackViewRef
             });
             UserController.getBookingHistory();
             paymentSuccess();

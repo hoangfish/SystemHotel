@@ -120,18 +120,30 @@ void UserController::getBookingHistory() {
             QVariantList bookings;
             for (const QJsonValue &value : bookingsArray) {
                 QJsonObject bookingObj = value.toObject();
+                bool isCheckIn = bookingObj["isCheckIn"].toBool();
+                bool isCheckOut = bookingObj["isCheckOut"].toBool();
+                
                 QString checkIn = QDateTime::fromString(bookingObj["checkInDate"].toString(), Qt::ISODate).toString("dd/MM/yyyy");
                 QString checkOut = QDateTime::fromString(bookingObj["checkOutDate"].toString(), Qt::ISODate).toString("dd/MM/yyyy");
-                QDateTime checkInDate = QDateTime::fromString(bookingObj["checkInDate"].toString(), Qt::ISODate);
-                QDateTime checkOutDate = QDateTime::fromString(bookingObj["checkOutDate"].toString(), Qt::ISODate);
-                int nights = checkInDate.daysTo(checkOutDate);
+                QString checkInDate = bookingObj["checkInDate"].toString();
+                QString checkOutDate = bookingObj["checkOutDate"].toString();
+                QDateTime checkInDate1 = QDateTime::fromString(bookingObj["checkInDate"].toString(), Qt::ISODate);
+                QDateTime checkOutDate1 = QDateTime::fromString(bookingObj["checkOutDate"].toString(), Qt::ISODate);
+                int nights = checkInDate1.daysTo(checkOutDate1);
                 double totalPrice = bookingObj["price"].toDouble() * nights;
                 bookings.append(QVariantMap{
                     {"bookingId", bookingObj["roomId"].toString() + "-" + checkIn},
+                    {"bookingCode", bookingObj["bookingCode"].toString()},
+                    {"isCheckIn", isCheckIn},
+                    {"isCheckOut", isCheckOut},
                     {"checkIn", checkIn},
                     {"checkOut", checkOut},
+                    {"checkInDate", checkInDate},
+                    {"checkOutDate", checkOutDate},
                     {"guest", m_userModel->firstName() + " " + m_userModel->lastName()},
-                    {"price", totalPrice}
+                    {"price", totalPrice},
+                    {"status", bookingObj["status"].toString()},
+                    {"roomId", bookingObj["roomId"].toString()}
                 });
             }
             LOG(LogLevel::INFO, "Booking history retrieved successfully");
@@ -140,6 +152,29 @@ void UserController::getBookingHistory() {
             QString errorMsg = obj["message"].toString();
             LOG(LogLevel::ERROR, "Booking history failed: " + errorMsg.toStdString());
             Q_EMIT bookingHistoryFailed(errorMsg);
+        }
+    });
+}
+
+void UserController::cancelBooking(const QString &bookingCode,const QString&roomId, const QString &action) {
+    QJsonObject json;
+    json["userId"] = getUserId();
+    json["roomId"] = roomId;
+    json["bookingCode"] = bookingCode;
+    json["action"] = action;
+
+    m_httpClient->sendPostRequest(QUrl(URL_USER_CANCEL), json, [=](QByteArray responseData) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        QJsonObject obj = doc.object();
+        if (obj["success"].toBool()) {
+            std::string tmp=action.toStdString();
+            LOG(LogLevel::INFO, tmp+" successfully");
+            Q_EMIT bookingCancelled(action);
+            //getBookingHistory();
+        } else {
+            QString errorMsg = obj["message"].toString();
+            LOG(LogLevel::ERROR, "Cancel failed: " + errorMsg.toStdString());
+            Q_EMIT cancelFailed(errorMsg);
         }
     });
 }

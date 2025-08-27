@@ -6,7 +6,7 @@ Page {
     id: bookingHistoryPage
     objectName: "BookingHistory"
 
-    property var stackView
+    property StackView stackViewRef
 
     Component.onCompleted: {
         UserController.getBookingHistory();
@@ -22,6 +22,17 @@ Page {
         }
         function onBookingHistoryFailed(errorMsg) {
             console.log("Failed to fetch booking history:", errorMsg);
+            errorDialog.text = errorMsg;
+            errorDialog.open();
+        }
+        function onBookingCancelled(message) {
+            console.log("Booking action completed successfully:", message);
+            errorDialog.text = message;
+            errorDialog.open();
+            UserController.getBookingHistory();
+        }
+        function onCancelFailed(errorMsg) {
+            console.log("Action failed:", errorMsg);
             errorDialog.text = errorMsg;
             errorDialog.open();
         }
@@ -102,10 +113,10 @@ Page {
                 // ===== HEADER BẢNG =====
                 RowLayout {
                     width: parent.width
-                    spacing: 20
+                    spacing: 10
 
                     Repeater {
-                        model: ["Booking ID", "Check-in", "Check-out", "Booker", "Price"]
+                        model: ["Booking ID", "Check-in", "Check-out", "Booker", "Price", "Status"]
                         delegate: Text {
                             text: modelData
                             font.bold: true
@@ -115,11 +126,12 @@ Page {
                             verticalAlignment: Text.AlignVCenter
                             Layout.preferredWidth: {
                                 switch(model.index) {
-                                    case 0: return 100;
-                                    case 1: return 100;
-                                    case 2: return 100;
-                                    case 3: return 120;
-                                    case 4: return 100;
+                                    case 0: return 150; // Booking ID
+                                    case 1: return 120; // Check-in
+                                    case 2: return 120; // Check-out
+                                    case 3: return 150; // Booker
+                                    case 4: return 120; // Price
+                                    case 5: return 120; // Status
                                     default: return 100;
                                 }
                             }
@@ -138,14 +150,119 @@ Page {
 
                     delegate: RowLayout {
                         width: parent.width
-                        spacing: 20
+                        spacing: 10
                         height: 40
 
-                        Text { text: bookingId; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
-                        Text { text: checkIn; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
-                        Text { text: checkOut; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
-                        Text { text: guest; font.pixelSize: 15; color: "#333"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 120; Layout.fillWidth: true }
-                        Text { text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }); font.pixelSize: 15; font.bold: true; color: "#c0392b"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; Layout.preferredWidth: 100; Layout.fillWidth: true }
+                        Text { 
+                            text: bookingId 
+                            font.pixelSize: 15 
+                            color: "#333" 
+                            horizontalAlignment: Text.AlignHCenter 
+                            verticalAlignment: Text.AlignVCenter 
+                            Layout.preferredWidth: 150 
+                            Layout.fillWidth: true 
+                        }
+                        Text { 
+                            text: checkIn 
+                            font.pixelSize: 15 
+                            color: "#333" 
+                            horizontalAlignment: Text.AlignHCenter 
+                            verticalAlignment: Text.AlignVCenter 
+                            Layout.preferredWidth: 120 
+                            Layout.fillWidth: true 
+                        }
+                        Text { 
+                            text: checkOut 
+                            font.pixelSize: 15 
+                            color: "#333" 
+                            horizontalAlignment: Text.AlignHCenter 
+                            verticalAlignment: Text.AlignVCenter 
+                            Layout.preferredWidth: 120 
+                            Layout.fillWidth: true 
+                        }
+                        Text { 
+                            text: guest 
+                            font.pixelSize: 15 
+                            color: "#333" 
+                            horizontalAlignment: Text.AlignHCenter 
+                            verticalAlignment: Text.AlignVCenter 
+                            Layout.preferredWidth: 150 
+                            Layout.fillWidth: true 
+                        }
+                        Text { 
+                            text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) 
+                            font.pixelSize: 15 
+                            font.bold: true 
+                            color: "#c0392b" 
+                            horizontalAlignment: Text.AlignHCenter 
+                            verticalAlignment: Text.AlignVCenter 
+                            Layout.preferredWidth: 120 
+                            Layout.fillWidth: true 
+                        }
+                        Button {
+                            id: actionButton
+                            width: 120
+                            height: 36
+
+                            property date now: new Date()
+                            property date ci: new Date(checkInDate)
+                            property date co: new Date(checkOutDate)
+                            property date nowDate: new Date(now.getFullYear(), now.getMonth(), now.getDate())
+                            property date ciDate: new Date(ci.getFullYear(), ci.getMonth(), ci.getDate())
+                            property date coDate: new Date(co.getFullYear(), co.getMonth(), co.getDate())
+
+                            text: {
+                                if (nowDate < ciDate) {
+                                    return "Huỷ"
+                                } else if (nowDate >= ciDate && nowDate < coDate) {
+                                    if (!isCheckIn) {
+                                        return "Check In"
+                                    } else if (isCheckIn && !isCheckOut) {
+                                        return "Check Out"
+                                    } else {
+                                        return "Đã CheckOut"
+                                    }
+                                } else {
+                                    return "Đã CheckOut"
+                                }
+                            }
+
+                            enabled: {
+                                if (nowDate < ciDate) {
+                                    return true
+                                } else if (nowDate >= ciDate && nowDate < coDate) {
+                                    if (!isCheckIn || (isCheckIn && !isCheckOut)) {
+                                        return true
+                                    }
+                                    return false
+                                } else {
+                                    return false
+                                }
+                            }
+
+                            background: Rectangle {
+                                color: actionButton.enabled ? "#7f2f2f" : "#cccccc"
+                                radius: 4
+                            }
+
+                            contentItem: Text {
+                                text: actionButton.text
+                                color: actionButton.enabled ? "white" : "#666666"
+                                font.pixelSize: 14
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            onClicked: {
+                                if (text === "Huỷ") {
+                                    UserController.cancelBooking(bookingCode,roomId, "cancel")
+                                } else if (text === "Check In") {
+                                    UserController.cancelBooking(bookingCode,roomId, "checkIn")
+                                } else if (text === "Check Out") {
+                                    UserController.cancelBooking(bookingCode,roomId, "checkOut")
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -201,7 +318,9 @@ Page {
                                 verticalAlignment: Text.AlignVCenter
                             }
                             onClicked: {
-                                stackView.replace("qrc:/Pkg/MVC/Views/Booking.qml");
+                                stackViewRef.push("qrc:/Pkg/MVC/Views/Booking.qml",{
+                                    stackViewRef: stackViewRef
+                                });
                             }
                         }
                     }

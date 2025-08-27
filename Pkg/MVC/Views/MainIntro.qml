@@ -7,8 +7,8 @@ Page {
     objectName: "MainIntro"
     signal openLogin
 
-    width: 900
-    height: 720
+    width: 1280
+    height: 800
 
     // ===== TASKBAR =====
     Rectangle {
@@ -22,14 +22,15 @@ Page {
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 12
-            spacing: 12
+            anchors.margins: 16
+            spacing: 16
 
             Repeater {
                 model: [
                     { label: "Tổng quan", target: overviewSection },
                     { label: "Vị trí", target: locationSection },
                     { label: "Phòng nghỉ", target: roomSection },
+                    { label: "Ẩm thực", target: foodSection },
                     { label: "Dịch vụ", target: serviceSection }
                 ]
                 delegate: MouseArea {
@@ -60,7 +61,15 @@ Page {
             Button {
                 text: "Đăng nhập"
                 font.bold: true
+                font.pixelSize: 14
                 background: Rectangle { color: "#FF5722"; radius: 6 }
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font: parent.font
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
                 onClicked: openLogin()
             }
         }
@@ -87,12 +96,12 @@ Page {
             id: columnContent
             width: mainIntro.width
             spacing: 32
-            anchors.margins: 24
+            anchors.margins: 32
 
             // ẢNH BANNER
             Rectangle {
                 width: parent.width
-                height: 420
+                height: 380
                 Image {
                     anchors.fill: parent
                     source: "qrc:/Pkg/MVC/Views/images/banner_background.png"
@@ -104,52 +113,32 @@ Page {
             // NGĂN CÁCH GIỮA ẢNH VÀ NỘI DUNG
             Rectangle {
                 width: parent.width
-                height: 200
-                color: "#eeeeee"
+                height: 160
+                color: "#f5f5f5"
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 16
-                    spacing: 6
+                    anchors.margins: 24
+                    spacing: 8
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
-                    // Tiêu đề - lớn, in đậm
                     Label {
                         text: "Mường Thanh Luxury TP.HCM"
                         font.family: "Helvetica"
-                        font.pixelSize: 20
+                        font.pixelSize: 22
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter
                     }
 
-                    // Mô tả - nhỏ hơn, nhẹ nhàng hơn
                     Label {
-                        text: "Mường Thanh nổi bật với phong cách thiết kế độc đáo, kết hợp hài hoà"
+                        text: "Thiết kế hiện đại kết hợp truyền thống, mang đến trải nghiệm độc đáo."
                         font.family: "Helvetica"
                         font.pixelSize: 14
                         wrapMode: Text.WordWrap
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter
-                        maximumLineCount: 3
-                    }
-                    Label {
-                        text: "giữa tính hiện đại và giá trị truyền thống Việt Nam, mang đến"
-                        font.family: "Helvetica"
-                        font.pixelSize: 14
-                        wrapMode: Text.WordWrap
-                        horizontalAlignment: Text.AlignHCenter
-                        Layout.alignment: Qt.AlignHCenter
-                        maximumLineCount: 3
-                    }
-                    Label {
-                        text: "trải nghiệm mới mẻ cho du khách."
-                        font.family: "Helvetica"
-                        font.pixelSize: 14
-                        wrapMode: Text.WordWrap
-                        horizontalAlignment: Text.AlignHCenter
-                        Layout.alignment: Qt.AlignHCenter
-                        maximumLineCount: 3
+                        maximumLineCount: 2
                     }
                 }
             }
@@ -157,86 +146,114 @@ Page {
             // LOBBY + THÔNG TIN
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 24
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 40
+                Layout.leftMargin: 48
+                Layout.rightMargin: 48
 
                 Rectangle {
-                    width: 480
-                    height: 260
+                    width: 460
+                    height: 240
                     color: "transparent"
+                    Layout.leftMargin: 24
                     Image {
-                        anchors.centerIn: parent
+                        anchors.fill: parent
                         source: "qrc:/Pkg/MVC/Views/images/lobby.png"
-                        width: parent.width
-                        height: parent.height
                         fillMode: Image.PreserveAspectCrop
                     }
                 }
 
                 ColumnLayout {
-                    spacing: 10
+                    spacing: 12
                     Layout.fillWidth: true
+                    Layout.preferredWidth: 460
+                    Layout.rightMargin: 24
 
-                    Label { text: "Mường Thanh Luxury Sài Gòn"; font.pixelSize: 26; font.bold: true }
-                    Label { text: "Địa chỉ: 123 Nguyễn Văn Linh, Quận 7, TP.HCM"; wrapMode: Text.WordWrap }
-                    Label { text: "Giá phòng từ: 1.200.000đ/đêm"; font.pixelSize: 18 }
-                    Label { text: "Dịch vụ: Hồ bơi, Nhà hàng, Wifi miễn phí" }
-                    Label { text: "Liên hệ: 028 1234 5678" }
+                    Label { 
+                        text: "Mường Thanh Luxury Sài Gòn"; 
+                        font.pixelSize: 24; 
+                        font.bold: true; 
+                        font.family: "Segoe UI"
+                    }
+                    Label { 
+                        text: "Địa chỉ: 123 Nguyễn Văn Linh, Quận 7"; 
+                        font.pixelSize: 14;
+                        font.family: "Segoe UI";
+                        wrapMode: Text.WordWrap
+                    }
+                    Label { 
+                        text: "Giá từ: 1.200.000đ/đêm"; 
+                        font.pixelSize: 16;
+                        font.family: "Segoe UI"
+                    }
+                    Label { 
+                        text: "Dịch vụ: Hồ bơi, Nhà hàng, Wifi"; 
+                        font.pixelSize: 14;
+                        font.family: "Segoe UI"
+                    }
 
                     Button {
-                        text: "Đặt phòng"
-                        width: 140
+                        text: "Đặt phòng ngay"
+                        font.pixelSize: 14
+                        width: 160
+                        background: Rectangle { color: "#FF5722"; radius: 6 }
+                        contentItem: Text {
+                            text: parent.text
+                            color: "white"
+                            font: parent.font
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
                         onClicked: openLogin()
                     }
                 }
             }
 
-            // 1. TỔNG QUAN - Ảnh bên phải, thông tin bên trái
+            // 1. TỔNG QUAN
             RowLayout {
                 id: overviewSection
                 Layout.fillWidth: true
-                spacing: 24
+                spacing: 48
+                Layout.leftMargin: 48
+                Layout.rightMargin: 48
 
                 ColumnLayout {
-                    spacing: 10
+                    spacing: 8
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 420
+                    Layout.preferredWidth: 460
+                    Layout.leftMargin: 48
+                    Layout.rightMargin: 24
 
                     Label {
                         text: "1. TỔNG QUAN"
-                        font.pixelSize: 24
+                        font.pixelSize: 22
                         font.bold: true
                         font.family: "Segoe UI"
                         color: "#333333"
                     }
 
                     Label {
-                        text: "-Không gian sang trọng, thiết kế hài hòa giữa hiện đại và truyền thống."
+                        text: "- Không gian sang trọng, đậm chất văn hóa Việt."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
 
                     Label {
-                        text: "-Phù hợp cho cả khách du lịch và công tác."
+                        text: "- Lý tưởng cho du lịch, công tác và nghỉ dưỡng."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
-                        font.family: "Segoe UI"
-                        color: "#444444"
-                    }
-                    Label {
-                        text: "-Vị trí thuận tiện cùng đa dạng các loại hình dịch vụ."
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
                 }
 
                 Rectangle {
-                    width: 400
-                    height: 260
+                    width: 460
+                    height: 240
                     color: "transparent"
+                    Layout.leftMargin: 48
                     Image {
                         anchors.fill: parent
                         source: "qrc:/Pkg/MVC/Views/images/outside_look.png"
@@ -245,16 +262,19 @@ Page {
                 }
             }
 
-            // 2. VỊ TRÍ - Ảnh bên trái, thông tin bên phải
+            // 2. VỊ TRÍ
             RowLayout {
                 id: locationSection
                 Layout.fillWidth: true
-                spacing: 24
+                spacing: 64
+                Layout.leftMargin: 48
+                Layout.rightMargin: 48
 
                 Rectangle {
-                    width: 400
-                    height: 260
+                    width: 460
+                    height: 240
                     color: "transparent"
+                    Layout.leftMargin: 48
                     Image {
                         anchors.fill: parent
                         source: "qrc:/Pkg/MVC/Views/images/pool.png"
@@ -263,67 +283,73 @@ Page {
                 }
 
                 ColumnLayout {
-                    spacing: 10
+                    spacing: 8
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 420
+                    Layout.preferredWidth: 460
+                    Layout.leftMargin: 48
+                    Layout.rightMargin: 48
 
                     Label {
-                        text: "2. VỊ TRÍ VÀ KẾT NỐI"
-                        font.pixelSize: 24
+                        text: "2. VỊ TRÍ"
+                        font.pixelSize: 22
                         font.bold: true
                         font.family: "Segoe UI"
                         color: "#333333"
                     }
 
                     Label {
-                        text: "-Nằm tại trung tâm Quận 7, dễ kết nối đến các trung tâm\n thương mại, sân bay và khu giải trí."
+                        text: "- Trung tâm Quận 7, gần khu thương mại sầm uất."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
 
                     Label {
-                        text: "-Tiết kiệm thời gian di chuyển, tận hưởng kỳ nghỉ trọn vẹn."
+                        text: "- Gần sân bay, thuận tiện di chuyển nhanh chóng."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
                 }
             }
 
-            // 3. PHÒNG NGHỈ - Ảnh bên phải, thông tin bên trái
+            // 3. PHÒNG NGHỈ
             RowLayout {
                 id: roomSection
                 Layout.fillWidth: true
-                spacing: 24
+                spacing: 48
+                Layout.leftMargin: 48
+                Layout.rightMargin: 48
 
                 ColumnLayout {
-                    spacing: 10
+                    spacing: 8
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 420
+                    Layout.preferredWidth: 460
+                    Layout.leftMargin: 48
+                    Layout.rightMargin: 24
 
                     Label {
-                        text: "3. HỆ THỐNG PHÒNG NGHỈ"
-                        font.pixelSize: 24
+                        text: "3. PHÒNG NGHỈ"
+                        font.pixelSize: 22
                         font.bold: true
                         font.family: "Segoe UI"
                         color: "#333333"
                     }
 
                     Label {
-                        text: "-Đa dạng loại phòng từ tiêu chuẩn đến cao cấp,\n phù hợp cả nhu cầu nghỉ dưỡng và công tác."
+                        text: "- Đa dạng từ tiêu chuẩn đến cao cấp sang trọng, tiện nghi."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
 
                     Label {
-                        text: "-Phòng ốc trang bị tiện nghi hiện đại, thoáng đãng, tầm nhìn đẹp."
+                        text: "- Tiện nghi hiện đại, tầm nhìn đẹp, không gian thoáng đãng."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
@@ -331,9 +357,10 @@ Page {
 
                 ColumnLayout {
                     spacing: 12
+                    Layout.leftMargin: 48
                     Rectangle {
-                        width: 400
-                        height: 180
+                        width: 460
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -342,8 +369,8 @@ Page {
                         }
                     }
                     Rectangle {
-                        width: 400
-                        height: 180
+                        width: 460
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -354,18 +381,20 @@ Page {
                 }
             }
 
-            // 4. ẨM THỰC & NHÀ HÀNG
+            // 4. ẨM THỰC
             RowLayout {
                 id: foodSection
                 Layout.fillWidth: true
-                spacing: 24
+                spacing: 64
+                Layout.leftMargin: 48
+                Layout.rightMargin: 48
 
-                // 2 ảnh bên trái
                 ColumnLayout {
                     spacing: 12
+                    Layout.leftMargin: 48
                     Rectangle {
-                        width: 400
-                        height: 180
+                        width: 460
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -374,8 +403,8 @@ Page {
                         }
                     }
                     Rectangle {
-                        width: 400
-                        height: 180
+                        width: 460
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -385,97 +414,85 @@ Page {
                     }
                 }
 
-                // Thông tin bên phải
                 ColumnLayout {
-                    spacing: 10
+                    spacing: 8
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 420
+                    Layout.preferredWidth: 460
+                    Layout.leftMargin: 48
+                    Layout.rightMargin: 48
 
                     Label {
-                        text: "4. ẨM THỰC & NHÀ HÀNG"
-                        font.pixelSize: 24
+                        text: "4. ẨM THỰC"
+                        font.pixelSize: 22
                         font.bold: true
                         font.family: "Segoe UI"
                         color: "#333333"
                     }
 
                     Label {
-                        text: "-Thưởng thức buffet đa dạng món Á – Âu, nguyên liệu tươi ngon."
+                        text: "- Buffet Á-Âu, nguyên liệu tươi ngon, đa dạng món ăn."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
 
                     Label {
-                        text: "-Đặc biệt các món hải sản tươi sống chế biến ngay tại quầy."
+                        text: "- Hải sản tươi sống, không gian sang trọng, ấm cúng, chuyên nghiệp."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
-                        font.family: "Segoe UI"
-                        color: "#444444"
-                    }
-
-                    Label {
-                        text: "-Không gian nhà hàng sang trọng, phục vụ tận tâm."
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
                 }
             }
 
-            // 5. HOẠT ĐỘNG & GIẢI TRÍ
+            // 5. HOẠT ĐỘNG
             RowLayout {
                 id: activitySection
                 Layout.fillWidth: true
-                spacing: 24
+                spacing: 48
+                Layout.leftMargin: 48
+                Layout.rightMargin: 48
 
-                // Thông tin bên trái
                 ColumnLayout {
-                    spacing: 10
+                    spacing: 8
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 420
+                    Layout.preferredWidth: 460
+                    Layout.leftMargin: 48
+                    Layout.rightMargin: 24
 
                     Label {
-                        text: "5. HOẠT ĐỘNG & GIẢI TRÍ"
-                        font.pixelSize: 24
+                        text: "5. HOẠT ĐỘNG"
+                        font.pixelSize: 22
                         font.bold: true
                         font.family: "Segoe UI"
                         color: "#333333"
                     }
 
                     Label {
-                        text: "-Phòng gym hiện đại, trang thiết bị tân tiến đầy đủ."
+                        text: "- Phòng gym hiện đại, thiết bị tiên tiến hàng đầu, đầy đủ."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
 
                     Label {
-                        text: "-Quầy bar ngoài trời với các loại cocktail độc đáo."
+                        text: "- Bar ngoài trời, cocktail độc đáo, không gian thư giãn thoải mái."
                         wrapMode: Text.WordWrap
-                        font.pixelSize: 16
-                        font.family: "Segoe UI"
-                        color: "#444444"
-                    }
-
-                    Label {
-                        text: "-Các hoạt động giải trí phù hợp cho mọi lứa tuổi."
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         font.family: "Segoe UI"
                         color: "#444444"
                     }
                 }
 
-                // 2 ảnh bên phải
                 ColumnLayout {
                     spacing: 12
+                    Layout.leftMargin: 48
                     Rectangle {
-                        width: 400
-                        height: 180
+                        width: 460
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -484,8 +501,8 @@ Page {
                         }
                     }
                     Rectangle {
-                        width: 400
-                        height: 180
+                        width: 460
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -496,38 +513,44 @@ Page {
                 }
             }
 
-            // 6. DỊCH VỤ - giữ lại cấu trúc 2 ảnh trên 2 ảnh dưới, căn đều và gọn
+            // 6. DỊCH VỤ
             ColumnLayout {
                 id: serviceSection
-                spacing: 10
+                spacing: 12
+                Layout.fillWidth: true
 
                 Label {
-                    text: "4. DỊCH VỤ TIỆN ÍCH"
-                    font.pixelSize: 24
+                    text: "6. DỊCH VỤ TIỆN ÍCH"
+                    font.pixelSize: 22
                     font.bold: true
                     font.family: "Segoe UI"
                     color: "#333333"
+                    horizontalAlignment: Text.AlignHCenter
                     Layout.alignment: Qt.AlignHCenter
                 }
 
                 Label {
-                    text: "  -Hồ bơi, nhà hàng sang trọng, wifi miễn phí và dịch vụ spa cao cấp – tất cả nhằm mang đến trải nghiệm tốt nhất."
+                    text: "- Hồ bơi, nhà hàng, wifi, spa cao cấp cho trải nghiệm tuyệt vời."
                     wrapMode: Text.WordWrap
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                     font.family: "Segoe UI"
                     color: "#444444"
                     width: 600
                     horizontalAlignment: Text.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter
                 }
 
                 // Ảnh hàng trên
                 RowLayout {
-                    spacing: 12
+                    spacing: 32
                     Layout.alignment: Qt.AlignHCenter
+                    width: parent.width
+
+                    Item { Layout.fillWidth: true }
 
                     Rectangle {
-                        width: 300
-                        height: 180
+                        width: 280
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -536,8 +559,8 @@ Page {
                         }
                     }
                     Rectangle {
-                        width: 300
-                        height: 180
+                        width: 280
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -545,16 +568,21 @@ Page {
                             fillMode: Image.PreserveAspectCrop
                         }
                     }
+
+                    Item { Layout.fillWidth: true }
                 }
 
                 // Ảnh hàng dưới
                 RowLayout {
-                    spacing: 12
+                    spacing: 32
                     Layout.alignment: Qt.AlignHCenter
+                    width: parent.width
+
+                    Item { Layout.fillWidth: true }
 
                     Rectangle {
-                        width: 300
-                        height: 180
+                        width: 280
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -563,8 +591,8 @@ Page {
                         }
                     }
                     Rectangle {
-                        width: 300
-                        height: 180
+                        width: 280
+                        height: 160
                         color: "transparent"
                         Image {
                             anchors.fill: parent
@@ -572,13 +600,15 @@ Page {
                             fillMode: Image.PreserveAspectCrop
                         }
                     }
+
+                    Item { Layout.fillWidth: true }
                 }
             }
 
             // FOOTER
             Rectangle {
                 width: parent.width
-                height: 220
+                height: 180
                 color: "#001f3f"
 
                 RowLayout {
@@ -591,12 +621,13 @@ Page {
                         Label {
                             text: "fit@hcmus"
                             color: "#00cc99"
-                            font.pixelSize: 20
+                            font.pixelSize: 18
                             font.bold: true
                         }
                         Label {
-                            text: "Faculty of Information Technology,\nVNUHCM - University of Science"
+                            text: "Faculty of IT, VNUHCM - US"
                             color: "#ffffff"
+                            font.pixelSize: 14
                             wrapMode: Text.WordWrap
                         }
                     }
@@ -606,13 +637,13 @@ Page {
                         Label {
                             text: "Members"
                             color: "#00cc99"
-                            font.pixelSize: 18
+                            font.pixelSize: 16
                             font.bold: true
                         }
-                        Label { text: "• Phạm Hoàng Phúc"; color: "#ffffff" }
-                        Label { text: "• Nguyễn Trực Phúc"; color: "#ffffff" }
-                        Label { text: "• Nguyễn Khang Hy"; color: "#ffffff" }
-                        Label { text: "• Lê Đinh Nguyên Phong"; color: "#ffffff" }
+                        Label { text: "• Phạm Hoàng Phúc"; color: "#ffffff"; font.pixelSize: 14 }
+                        Label { text: "• Nguyễn Trực Phúc"; color: "#ffffff"; font.pixelSize: 14 }
+                        Label { text: "• Nguyễn Khang Hy"; color: "#ffffff"; font.pixelSize: 14 }
+                        Label { text: "• Lê Đinh Nguyên Phong"; color: "#ffffff"; font.pixelSize: 14 }
                     }
 
                     ColumnLayout {
@@ -620,10 +651,10 @@ Page {
                         Label {
                             text: "Contact Us"
                             color: "#00cc99"
-                            font.pixelSize: 18
+                            font.pixelSize: 16
                             font.bold: true
                         }
-                        Label { text: "📞 0915 895 157"; color: "#ffffff" }
+                        Label { text: "📞 0915 895 157"; color: "#ffffff"; font.pixelSize: 14 }
                         MouseArea {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: Qt.openUrlExternally("mailto:nkhy2414@clc.fitus.edu.vn")
@@ -631,6 +662,7 @@ Page {
                             Label {
                                 text: "✉ nkhy2414@clc.fitus.edu.vn"
                                 color: "#00ccff"
+                                font.pixelSize: 14
                                 font.underline: true
                             }
                         }

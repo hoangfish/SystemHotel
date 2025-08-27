@@ -28,7 +28,7 @@ Item {
     property var selectedRoom: ({})
 
     // Thêm cho phân trang và lọc
-    property string currentFilter: "Tùy chọn phòng"  // Giá trị filter mặc định
+    property string currentFilter: "Choose room"  // Giá trị filter mặc định
     property int itemsPerPage: 10  // Số phòng mỗi trang
     property int currentPage: 1    // Trang hiện tại
     property int totalPages: 0     // Tổng số trang (tính toán sau)
@@ -90,14 +90,14 @@ Item {
         }
     }
 
-    // Hàm mới: Cập nhật visible cho items dựa trên filter và page
+    // Hàm cập nhật visible cho items dựa trên filter và page
     function updateVisibleItems() {
         var visibleCount = 0;
 
         // Loop 1: Đếm tổng số items khớp filter
         for (var i = 0; i < roomModel.count; i++) {
             var item = roomModel.get(i);
-            var matchesFilter = (currentFilter === "Tùy chọn phòng" || item.roomType === currentFilter);
+            var matchesFilter = (currentFilter === "RoomType" || item.roomType === currentFilter);
             if (matchesFilter) {
                 visibleCount++;
             }
@@ -116,7 +116,7 @@ Item {
         // Loop 2: Set visible chỉ cho items khớp filter và trong range page
         for (var j = 0; j < roomModel.count; j++) {
             var item2 = roomModel.get(j);
-            var matchesFilter2 = (currentFilter === "Tùy chọn phòng" || item2.roomType === currentFilter);
+            var matchesFilter2 = (currentFilter === "RoomType" || item2.roomType === currentFilter);
             if (matchesFilter2) {
                 item2.visible = (visibleCount >= startIndex && visibleCount < endIndex);
                 visibleCount++;
@@ -414,7 +414,7 @@ Item {
                         }
                         Layout.fillWidth: true
                         Layout.preferredHeight: 50
-                        enabled: selectedRoom.roomId && selectedRoom.status === "available" && nights > 0
+                        enabled: (selectedRoom.roomId !== "") && (selectedRoom.status === "available" ) && (nights > 0)
                         onClicked: {
                             stackViewRef.push("qrc:/Pkg/MVC/Views/Payment.qml", {
                                 selectedRoom: selectedRoom,
@@ -422,7 +422,7 @@ Item {
                                 checkOutDate: checkOutDate,
                                 nights: nights,
                                 totalPrice: totalPrice,
-                                stackView: stackViewRef // Thêm stackView để truyền sang Payment.qml
+                                stackViewRef: stackViewRef
                             });
                             continueBooking();
                         }
@@ -481,9 +481,9 @@ Item {
                                 id: roomTypeFilter
                                 Layout.preferredWidth: 166
                                 Layout.preferredHeight: 35
-                                model: ["Tùy chọn phòng", "single", "double", "family"]
+                                model: ["RoomType", "single", "double", "family"]
                                 anchors.verticalCenter: parent.verticalCenter
-                                currentIndex: 0  // Mặc định chọn "Tùy chọn phòng"
+                                currentIndex: 0  // Mặc định chọn "RoomType"
                                 onCurrentTextChanged: {
                                     currentFilter = currentText;
                                     currentPage = 1;  // Reset về trang 1 khi filter thay đổi
@@ -599,7 +599,7 @@ Item {
                         }
                     }
 
-                    // Thêm phân trang ở đây
+                    // Thêm phân trang
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
                         spacing: 8
@@ -770,6 +770,18 @@ Item {
                             font.pixelSize: 12
                             color: "#c2185b"
                         }
+                    }
+                }
+
+                Button {
+                    text: "Lịch sử đặt phòng"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        profileDialog.close();
+                        stackViewRef.push("qrc:/Pkg/MVC/Views/BookingHistory.qml",{
+                            stackViewRef: stackViewRef
+                        });
+                        UserController.getBookingHistory();
                     }
                 }
 
