@@ -32,6 +32,7 @@ Item {
     property int itemsPerPage: 10  // Số phòng mỗi trang
     property int currentPage: 1    // Trang hiện tại
     property int totalPages: 0     // Tổng số trang (tính toán sau)
+    property int maxVisiblePages: 5  // Số trang hiển thị tối đa trong thanh phân trang
 
     Component.onCompleted: {
         RoomController.getRooms();
@@ -106,7 +107,7 @@ Item {
         // Tính tổng trang
         totalPages = Math.ceil(visibleCount / itemsPerPage);
         if (totalPages === 0) totalPages = 1;  // Ít nhất 1 trang
-        if (currentPage > totalPages) currentPage = 1;  // Reset nếu cần
+        if (currentPage > totalPages) currentPage = totalPages;  // Reset nếu cần
 
         // Reset visibleCount cho page
         visibleCount = 0;
@@ -390,7 +391,7 @@ Item {
                     anchors.margins: 4
 
                     Text {
-                        text: nights > 0 ? totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : (selectedRoom.price ? selectedRoom.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : "0 ₫")
+                        text: nights > 0 ? Number(totalPrice).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : (selectedRoom.price ? Number(selectedRoom.price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ")
                         font.pixelSize: 24
                         font.bold: true
                         color: "#7f2f2f"
@@ -557,7 +558,7 @@ Item {
                                         spacing: 16
 
                                         Text {
-                                            text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+                                            text: price ? Number(price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ"
                                             font.pixelSize: 18
                                             font.bold: true
                                             color: "#d32f2f"
@@ -591,7 +592,7 @@ Item {
                         }
                     }
 
-                    // Thêm phân trang
+                    // Thanh phân trang
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
                         spacing: 8
@@ -605,20 +606,33 @@ Item {
                             }
                         }
 
+                        // Hiển thị tối đa 5 nút phân trang
                         Repeater {
-                            model: totalPages
+                            model: {
+                                var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                                var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                                var pageList = [];
+                                for (var i = startPage; i <= endPage; i++) {
+                                    pageList.push(i);
+                                }
+                                return pageList;
+                            }
                             Button {
-                                text: (index + 1).toString()
+                                text: modelData.toString()
                                 background: Rectangle {
-                                    color: (index + 1 === currentPage) ? "#7f2f2f" : "#f0f0f0"
+                                    color: modelData === currentPage ? "#7f2f2f" : "#f0f0f0"
                                     radius: 4
                                 }
                                 contentItem: Text {
                                     text: parent.text
-                                    color: (index + 1 === currentPage) ? "white" : "#333"
+                                    color: modelData === currentPage ? "white" : "#333"
+                                    font.pixelSize: 14
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
                                 onClicked: {
-                                    currentPage = index + 1;
+                                    currentPage = modelData;
                                     updateVisibleItems();
                                 }
                             }

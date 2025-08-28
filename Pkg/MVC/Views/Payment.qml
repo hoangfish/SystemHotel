@@ -61,10 +61,179 @@ Page {
         }
     }
 
+    // ========== TITLE ==========
+    Rectangle {
+        id: titleBar
+        anchors.top: header.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 60
+        color: "transparent"
+        z: 1
+
+        Text {
+            anchors.centerIn: parent
+            text: "Thanh toán"
+            font.pixelSize: 28
+            font.bold: true
+            color: "#333"
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 6
+            color: "#f5ecec"
+        }
+        Rectangle {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            height: 4
+            width: parent.width * 0.35
+            anchors.margins: 0
+            color: "#b45b5b"
+        }
+    }
+
+    // ========== Booking Summary ==========
+    Rectangle {
+        id: bookingSummary
+        width: 320
+        height: 320
+        radius: 8
+        color: "#fafafa"
+        border.color: "#ddd"
+        border.width: 1
+        z: 3
+
+        anchors.top: titleBar.bottom
+        anchors.topMargin: 20
+        anchors.right: parent.right
+        anchors.rightMargin: 24
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 12
+            spacing: 8
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 48
+                color: "transparent"
+                Text {
+                    anchors.centerIn: parent
+                    text: "Đơn đặt phòng của tôi"
+                    font.pixelSize: 18
+                    font.bold: true
+                    color: "#333"
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 48
+                color: "#fff3f3"
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 8
+
+                    Text {
+                        text: "Phòng:"
+                        font.pixelSize: 14
+                        font.bold: true
+                        color: "#333"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                    Text {
+                        text: selectedRoom ? selectedRoom.roomId : "Chưa chọn phòng"
+                        font.pixelSize: 15
+                        font.bold: true
+                        color: "#7f2f2f"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 36
+                color: "#fff3f3"
+                Text {
+                    anchors.centerIn: parent
+                    text: selectedRoom ? (selectedRoom.roomType ? selectedRoom.roomType.charAt(0).toUpperCase() + selectedRoom.roomType.slice(1) : "Chưa chọn loại phòng") : "Chưa chọn loại phòng"
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#333"
+                }
+            }
+
+            ColumnLayout {
+                visible: nights > 0
+                spacing: 2
+                RowLayout {
+                    spacing: 8
+                    Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInDate, "yyyy-MM-dd"), "dd"); font.pixelSize: 20; font.bold: true; color: "#333" }
+                    Text { text: "tháng " + Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInDate, "yyyy-MM-dd"), "MM"); font.pixelSize: 14; color: "#333" }
+                    Text { text: "—"; font.pixelSize: 20; color: "#333" }
+                    Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutDate, "yyyy-MM-dd"), "dd"); font.pixelSize: 20; font.bold: true; color: "#333" }
+                    Text { text: "tháng " + Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutDate, "yyyy-MM-dd"), "MM"); font.pixelSize: 14; color: "#333" }
+                }
+                RowLayout {
+                    spacing: 12
+                    ColumnLayout {
+                        spacing: 2
+                        Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInDate, "yyyy-MM-dd"), "dddd"); font.pixelSize: 12; color: "#555" }
+                        Text { text: "từ lúc 14:00"; font.pixelSize: 12; color: "#555" }
+                    }
+                    ColumnLayout {
+                        spacing: 2
+                        Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutDate, "yyyy-MM-dd"), "dddd"); font.pixelSize: 12; color: "#555" }
+                        Text { text: "đến 12:30"; font.pixelSize: 12; color: "#555" }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 36
+                color: "#fff3f3"
+                visible: nights > 0
+                Text {
+                    anchors.centerIn: parent
+                    text: nights + " đêm"
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#333"
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 60
+                color: "transparent"
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 4
+
+                    Text {
+                        text: nights > 0 ? Number(totalPrice).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : (selectedRoom.price ? Number(selectedRoom.price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ")
+                        font.pixelSize: 24
+                        font.bold: true
+                        color: "#7f2f2f"
+                        horizontalAlignment: Text.AlignHCenter
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                }
+            }
+        }
+    }
+
     // ========== MAIN SCROLL ==========
     ScrollView {
         id: mainScroll
-        anchors.top: header.bottom
+        anchors.top: titleBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -222,7 +391,7 @@ Page {
 
                                     Label {
                                         font.bold: true
-                                        text: "Tổng số tiền phải trả: " + totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+                                        text: "Tổng số tiền phải trả: " + (totalPrice ? Number(totalPrice).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ")
                                     }
 
                                     Button {
@@ -317,127 +486,6 @@ Page {
                                 font.underline: true
                             }
                         }
-                    }
-                }
-            }
-        }
-    }
-
-    // ========== Booking Summary ==========
-    Rectangle {
-        id: bookingSummary
-        width: 320
-        height: 280
-        radius: 8
-        color: "#fafafa"
-        border.color: "#ddd"
-        border.width: 1
-        z: 3
-
-        anchors.top: header.bottom
-        anchors.topMargin: 80
-        anchors.right: parent.right
-        anchors.rightMargin: 24
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 12
-            spacing: 8
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 48
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text: "Đơn đặt phòng của tôi"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: "#333"
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 36
-                color: "#fff3f3"
-                Text {
-                    anchors.centerIn: parent
-                    text: nights + " đêm"
-                    font.pixelSize: 14
-                    font.bold: true
-                    color: "#333"
-                }
-            }
-
-            Item { Layout.preferredHeight: 0 } // Spacer
-
-            ColumnLayout {
-                spacing: 2
-                RowLayout {
-                    spacing: 8
-                    Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInDate, "yyyy-MM-dd"), "dd"); font.pixelSize: 20; font.bold: true; color: "#333" }
-                    Text { text: "tháng " + Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInDate, "yyyy-MM-dd"), "MM"); font.pixelSize: 14; color: "#333" }
-                    Text { text: "—"; font.pixelSize: 20; color: "#333" }
-                    Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutDate, "yyyy-MM-dd"), "dd"); font.pixelSize: 20; font.bold: true; color: "#333" }
-                    Text { text: "tháng " + Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutDate, "yyyy-MM-dd"), "MM"); font.pixelSize: 14; color: "#333" }
-                }
-                RowLayout {
-                    spacing: 12
-                    ColumnLayout {
-                        spacing: 2
-                        Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkInDate, "yyyy-MM-dd"), "dddd"); font.pixelSize: 12; color: "#555" }
-                        Text { text: "từ lúc 14:00"; font.pixelSize: 12; color: "#555" }
-                    }
-                    ColumnLayout {
-                        spacing: 2
-                        Text { text: Qt.formatDate(Date.fromLocaleString(Qt.locale(), checkOutDate, "yyyy-MM-dd"), "dddd"); font.pixelSize: 12; color: "#555" }
-                        Text { text: "đến 12:30"; font.pixelSize: 12; color: "#555" }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 48
-                color: "#fff3f3"
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    spacing: 8
-
-                    Text {
-                        text: "Phòng:"
-                        font.pixelSize: 14
-                        font.bold: true
-                        color: "#333"
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-                    Text {
-                        text: selectedRoom ? selectedRoom.roomNumber : "Chưa chọn phòng"
-                        font.pixelSize: 15
-                        font.bold: true
-                        color: "#7f2f2f"
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 60
-                color: "transparent"
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 4
-
-                    Text {
-                        text: totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "#7f2f2f"
-                        horizontalAlignment: Text.AlignHCenter
-                        Layout.alignment: Qt.AlignHCenter
                     }
                 }
             }
@@ -549,7 +597,6 @@ Page {
         width: 300
         property alias text: errorText.text
 
-        // Tính toán vị trí dựa trên kích thước của mainScroll để căn giữa khu vực nội dung chính
         x: (mainScroll.width - width) / 2 + mainScroll.x
         y: (mainScroll.height - height) / 2 + mainScroll.y
 

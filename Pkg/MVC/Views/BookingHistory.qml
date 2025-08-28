@@ -187,7 +187,7 @@ Page {
                             Layout.preferredWidth: 150 
                         }
                         Text { 
-                            text: price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) 
+                            text: price ? Number(price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ" 
                             font.pixelSize: 15 
                             font.bold: true 
                             color: "#c0392b" 
