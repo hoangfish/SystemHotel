@@ -80,18 +80,7 @@ void RoomController::getRooms() {
                 QJsonObject roomObj = value.toObject();
                 QString imageUrl = roomObj["image"].toString();
                 QString localImagePath = downloadImage(imageUrl);
-                rooms.append(QVariantMap{
-                    {"roomId", roomObj["roomId"].toString()},
-                    {"roomNumber", roomObj["roomNumber"].toString()},
-                    {"status", roomObj["status"].toString()},
-                    {"bedCount", roomObj["bedCount"].toInt()},
-                    {"roomType", roomObj["roomType"].toString()},
-                    {"price", roomObj["price"].toDouble()},
-                    {"description", roomObj["description"].toString()},
-                    {"image", localImagePath},
-                    {"guests", roomObj["guests"].toInt()},
-                    {"area", roomObj["area"].toString()}
-                });
+                rooms.append(RoomAdapter::fromJson(roomObj));
             }
             this->setRoomList(rooms);
             LOG(LogLevel::INFO, "Rooms fetched successfully");
@@ -117,7 +106,6 @@ void RoomController::getRooms() {
         }
     });
 }
-
 void RoomController::selectRoom(const QString &roomId) {
     m_httpClient->sendGetRequest(QUrl(URL_ROOMS), [=](QByteArray responseData) {
         QJsonDocument doc = QJsonDocument::fromJson(responseData);

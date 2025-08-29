@@ -1,5 +1,4 @@
-#ifndef ROOMCONTROLLER_H
-#define ROOMCONTROLLER_H
+#pragma once
 
 #include <QObject>
 #include <QVariantList>
@@ -46,5 +45,20 @@ private:
     QVariantList m_roomList;
     bool isSubscribeSocket;
 };
-
-#endif // ROOMCONTROLLER_H
+class RoomAdapter {
+public:
+    static QVariantMap fromJson(const QJsonObject& obj) {
+        return QVariantMap{
+            {"roomId", obj["roomId"].toString()},
+            {"roomNumber", obj["roomNumber"].toString()},
+            {"status", obj["status"].toString()},
+            {"bedCount", obj["bedCount"].toInt()},
+            {"roomType", obj["roomType"].toString()},
+            {"price", obj["price"].toDouble()},
+            {"description", obj["description"].toString()},
+            {"image", obj["image"].toString()},
+            {"guests", obj["guests"].toInt()},
+            {"area", obj["area"].toString()}
+        };
+    }
+};

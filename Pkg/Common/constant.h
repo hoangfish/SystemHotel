@@ -34,4 +34,8 @@
 #define URL_USER_CANCEL \
     URL_SERVER_BACKEND \
     "/api/v1/users/cancel"
+
+#define URL_ROOMSTYPE \
+    URL_SERVER_BACKEND \
+    "/api/v1/rooms/type"
 #endif
