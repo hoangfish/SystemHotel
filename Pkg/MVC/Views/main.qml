@@ -28,6 +28,9 @@ ApplicationWindow {
                 login.loginSuccess.connect(() => {
                     stackView.replace("qrc:/Pkg/MVC/Views/Booking.qml", {stackViewRef: stackView})
                 })
+                login.adminLoginSuccess.connect(() => {
+                    stackView.replace("qrc:/Pkg/MVC/Views/CustomerList.qml", {stackViewRef: stackView})
+                })
             }
 
             if (stackView.currentItem && stackView.currentItem.objectName === "Booking") {
@@ -42,7 +45,6 @@ ApplicationWindow {
                 }
             }
 
-            // Giữ logic cho Dashboard nếu file này tồn tại
             if (stackView.currentItem && stackView.currentItem.objectName === "Dashboard") {
                 let dash = stackView.currentItem
                 dash.navigateToBooking.connect(() => stackView.push("qrc:/Pkg/MVC/Views/Booking.qml"))
@@ -55,8 +57,9 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        // Khởi tạo UserController và userModel
         UserController = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; UserController {}', this);
         UserModel = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; UserModel {}', this);
+        AdminController = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; AdminController {}', this);
+        AdminModel = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; AdminModel {}', this);
     }
 }

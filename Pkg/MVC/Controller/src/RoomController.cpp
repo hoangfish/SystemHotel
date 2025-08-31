@@ -195,3 +195,23 @@ void RoomController::bookRoom(const QString &roomId, const QString &checkInDate,
         }
     });
 }
+
+void RoomController::createRoom(const QJsonObject &roomData) {
+    QJsonArray roomsArray;
+    roomsArray.append(roomData);
+    QJsonObject json;
+    json["rooms"] = roomsArray;  // Gửi dưới dạng array để sử dụng bulk-create
+
+    m_httpClient->sendPostRequest(QUrl(URL_ROOMS_BULK_CREATE), json, [=](QByteArray responseData) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        QJsonObject obj = doc.object();
+        if (obj["success"].toBool()) {
+            LOG(LogLevel::INFO, "Room created successfully");
+            Q_EMIT roomCreated();
+        } else {
+            QString errorMsg = obj["message"].toString();
+            LOG(LogLevel::ERROR, "Room creation failed: " + errorMsg.toStdString());
+            Q_EMIT roomCreateFailed(errorMsg);
+        }
+    });
+}

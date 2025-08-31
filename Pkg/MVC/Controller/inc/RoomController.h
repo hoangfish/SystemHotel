@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE void getRooms();
     Q_INVOKABLE void selectRoom(const QString &roomId);
     Q_INVOKABLE void bookRoom(const QString &roomId, const QString &checkInDate, const QString &checkOutDate);
+    Q_INVOKABLE void createRoom(const QJsonObject &roomData);
 
     QVariantList getRoomList() const { return m_roomList; }
     void setRoomList(const QVariantList &roomList) {
@@ -37,6 +38,8 @@ Q_SIGNALS:
     void roomSelected(const QVariantMap &room);
     void roomBooked();
     void roomBookingFailed(const QString &errorMsg);
+    void roomCreated();
+    void roomCreateFailed(const QString &errorMsg);
     void roomListChanged();
 
 private:
@@ -45,6 +48,7 @@ private:
     QVariantList m_roomList;
     bool isSubscribeSocket;
 };
+
 class RoomAdapter {
 public:
     static QVariantMap fromJson(const QJsonObject& obj) {

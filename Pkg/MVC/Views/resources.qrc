@@ -5,6 +5,7 @@
         <file>Login.qml</file>
         <file>Booking.qml</file>
         <file>Payment.qml</file>
+        <file>CreateRoom.qml</file>
         <file>BookingHistory.qml</file>
         <file>CustomerList.qml</file>
         <file>ImageSlider.qml</file>
