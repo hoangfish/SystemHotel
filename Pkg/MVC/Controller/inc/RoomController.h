@@ -29,7 +29,8 @@ public:
     QVariantList getRoomList() const { return m_roomList; }
     void setRoomList(const QVariantList &roomList) {
         m_roomList = roomList;
-        Q_EMIT roomListChanged();
+        Q_EMIT roomsFetched(roomList);  // Emit roomsFetched để trigger QML update như bản cũ
+        Q_EMIT roomListChanged();  // Giữ nguyên emit này nếu cần cho chức năng khác ở bản mới
     }
 
 Q_SIGNALS:

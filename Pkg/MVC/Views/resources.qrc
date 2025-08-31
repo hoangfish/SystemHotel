@@ -8,7 +8,6 @@
         <file>CreateRoom.qml</file>
         <file>BookingHistory.qml</file>
         <file>CustomerList.qml</file>
-        <file>ImageSlider.qml</file>
         <file>images/school_logo.png</file>
         <file>images/lobby.png</file>
         <file>images/outside_look.png</file>

@@ -41,13 +41,14 @@ Item {
     Connections {
         target: RoomController
         function onRoomsFetched(rooms) {
+            console.log("Rooms fetched or updated via signal, length: " + rooms.length);  // Debug log để check signal trigger
             roomModel.clear();
             for (var i = 0; i < rooms.length; i++) {
                 var room = rooms[i];
                 room.visible = true;  // Thêm property visible mặc định true
                 roomModel.append(room);
             }
-            updateVisibleItems();  // Cập nhật visible ngay sau khi load
+            updateVisibleItems();  // Cập nhật visible ngay sau khi load/update
         }
         function onRoomFetchFailed(errorMsg) {
             console.log("Failed to fetch rooms:", errorMsg);
@@ -68,6 +69,10 @@ Item {
             console.log("Room booking failed:", errorMsg);
             errorDialog.text = errorMsg;
             errorDialog.open();
+        }
+        function onRoomListChanged() {
+            console.log("Room list changed, updating visible");  // Debug
+            updateVisibleItems();  // Thêm để update pagination mà không reset model
         }
     }
 

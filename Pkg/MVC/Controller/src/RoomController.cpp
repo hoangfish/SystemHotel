@@ -87,15 +87,12 @@ void RoomController::getRooms() {
             Q_EMIT roomsFetched(rooms);
             if (!isSubscribeSocket) {
                 SocketIoClient::getInstance().listenForEvent(
-                    SIG_NOTI_ROOMIDCHANGES, [&](sio::event &event) {
-                        sio::message::ptr msg = event.get_message();
-                        std::string roomIdStr = msg->get_map()["roomId"]->get_string();
-                        std::string newStatusStr = msg->get_map()["newStatus"]->get_string();
+                    SIG_NOTI_UPDATESTATUS, [&](sio::event &event) {  // Sửa match emit, format string như bản cũ
+                        std::string roomId = event.get_message()->get_string();
                         LOG(LogLevel::INFO, "Received event: " + event.get_name() +
-                                ", roomId: " + roomIdStr + ", newStatus: " + newStatusStr);
-                        QString tmpId = QString::fromStdString(roomIdStr);
-                        QString tmpStatus = QString::fromStdString(newStatusStr);
-                        setRoomStatus(tmpId, tmpStatus);
+                                ", roomId: " + roomId);
+                        QString tmpId = QString::fromStdString(roomId);
+                        setRoomStatus(tmpId, "booked");  // Luôn "booked" như bản cũ
                     });
                 isSubscribeSocket = true;
             }
@@ -106,6 +103,7 @@ void RoomController::getRooms() {
         }
     });
 }
+
 void RoomController::selectRoom(const QString &roomId) {
     m_httpClient->sendGetRequest(QUrl(URL_ROOMS), [=](QByteArray responseData) {
         QJsonDocument doc = QJsonDocument::fromJson(responseData);
@@ -177,10 +175,7 @@ void RoomController::bookRoom(const QString &roomId, const QString &checkInDate,
                     LOG(LogLevel::INFO, "Room booked and status updated successfully: " + roomId.toStdString());
                     Q_EMIT roomBooked();
                     sio::message::list msgSended;
-                    auto map = sio::object_message::create();
-                    map->get_map()["roomId"] = sio::string_message::create(roomId.toStdString());
-                    map->get_map()["newStatus"] = sio::string_message::create("booked");
-                    msgSended.push(map);
+                    msgSended.push(sio::string_message::create(roomId.toStdString()));  // Emit string như bản cũ
                     SocketIoClient::getInstance().emitEvent(SIG_NOTI_UPDATESTATUS, msgSended);
                 } else {
                     QString errorMsg = updateObj["message"].toString();
