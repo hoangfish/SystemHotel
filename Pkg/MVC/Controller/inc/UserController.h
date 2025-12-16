@@ -9,16 +9,21 @@
 
 class UserController : public QObject {
     Q_OBJECT
+    Q_PROPERTY(bool isLoginMode READ isLoginMode WRITE setIsLoginMode NOTIFY isLoginModeChanged)
+
     static UserController *instance;
+
 public:
     static UserController *getInstance() {
         if (instance == nullptr)
             instance = new UserController();
         return instance;
     }
+
     explicit UserController(QObject *parent = nullptr);
     UserModel* getUserModel() const { return m_userModel; }
-    QString getUserId();
+
+    Q_INVOKABLE QString getUserId();
     Q_INVOKABLE QString getFirstName();
     Q_INVOKABLE QString getLastName();
     Q_INVOKABLE QString getEmail();
@@ -30,7 +35,11 @@ public:
     Q_INVOKABLE void loginUser(const QString &emailOrPhone, const QString &password);
     Q_INVOKABLE void logoutUser();
     Q_INVOKABLE void getBookingHistory();
-    Q_INVOKABLE void cancelBooking(const QString &bookingCode,const QString&roomId,const QString &action);
+    Q_INVOKABLE void cancelBooking(const QString &bookingCode, const QString&roomId, const QString &action);
+    Q_INVOKABLE void readDeviceIdAndFetchUser();
+
+    Q_INVOKABLE bool isLoginMode() const;
+    Q_INVOKABLE void setIsLoginMode(bool mode);
 
 Q_SIGNALS:
     void registerSuccess();
@@ -43,10 +52,13 @@ Q_SIGNALS:
     void bookingHistoryFailed(const QString &errorMsg);
     void bookingCancelled(const QString& action, const QString &roomId);
     void cancelFailed(const QString &errorMsg);
+    void faceLoginSuccess();
+    void isLoginModeChanged();
 
 private:
     HttpClientImpl *m_httpClient;
     UserModel *m_userModel;
+    bool m_isLoginMode = false;
 };
 
 #endif // USERCONTROLLER_H

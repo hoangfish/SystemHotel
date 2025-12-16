@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
-//import QUANLYKHACHSAN 1.0
 
 ApplicationWindow {
     visible: true
@@ -22,33 +21,19 @@ ApplicationWindow {
                     stackView.push("qrc:/Pkg/MVC/Views/Login.qml")
                 })
             }
-
             if (stackView.currentItem && stackView.currentItem.objectName === "Login") {
                 let login = stackView.currentItem
                 login.loginSuccess.connect(() => {
-                    Qt.callLater(()=>{
-                    stackView.replace("qrc:/Pkg/MVC/Views/Booking.qml", {stackViewRef: stackView})
-                    });
+                    // ✅ FIX CUỐI: Clear hết stack cũ (xóa sạch Login + MainIntro) → push Booking mới
+                    delayTimer.start()
                 })
                 login.adminLoginSuccess.connect(() => {
-                    Qt.callLater(()=>{
-                    stackView.replace("qrc:/Pkg/MVC/Views/CustomerList.qml", {stackViewRef: stackView})
-                    });
+                    stackView.clear()
+                    Qt.callLater(() => {
+                        stackView.push("qrc:/Pkg/MVC/Views/CustomerList.qml", {stackViewRef: stackView})
+                    })
                 })
             }
-
-            if (stackView.currentItem && stackView.currentItem.objectName === "Booking") {
-                let booking = stackView.currentItem
-                // Kết nối với UserController để xử lý đăng xuất
-                Connections
-                {
-                    target: UserController
-                    function onLogoutSuccess() {
-                        stackView.replace("qrc:/Pkg/MVC/Views/Login.qml")
-                    }
-                }
-            }
-
             if (stackView.currentItem && stackView.currentItem.objectName === "Dashboard") {
                 let dash = stackView.currentItem
                 dash.navigateToBooking.connect(() => stackView.push("qrc:/Pkg/MVC/Views/Booking.qml"))
@@ -56,6 +41,29 @@ ApplicationWindow {
                 dash.navigateToReservation.connect(() => stackView.push("qrc:/Pkg/MVC/Views/BookingHistory.qml"))
                 dash.navigateToCustomer.connect(() => stackView.push("qrc:/Pkg/MVC/Views/CustomerList.qml"))
                 dash.logout.connect(() => stackView.pop())
+            }
+        }
+    }
+
+    // Timer delay push Booking sau khi clear stack
+    Timer {
+        id: delayTimer
+        interval: 300
+        repeat: false
+        onTriggered: {
+            stackView.clear()  // Xóa sạch stack cũ
+            stackView.push("qrc:/Pkg/MVC/Views/Booking.qml", {stackViewRef: stackView})
+        }
+    }
+
+    // Connections logout khi ở Booking (an toàn với currentItem)
+    Connections {
+        target: stackView.currentItem
+        ignoreUnknownSignals: true
+        function onLogoutSuccess() {
+            if (stackView.currentItem && stackView.currentItem.objectName === "Booking") {
+                stackView.clear()
+                stackView.push("qrc:/Pkg/MVC/Views/Login.qml")
             }
         }
     }

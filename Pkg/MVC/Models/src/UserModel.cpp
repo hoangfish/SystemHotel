@@ -1,6 +1,14 @@
 #include "../inc/UserModel.h"
 
-UserModel::UserModel(QObject *parent) : QObject(parent) {}
+UserModel::UserModel(QObject *parent) : QObject(parent)
+{
+    m_firstName = "";
+    m_lastName = "";
+    m_id = "";
+    m_email = "";
+    m_phone = "";
+    m_deviceID = "";
+}
 
 QString UserModel::firstName() const {
     return m_firstName;
@@ -54,5 +62,16 @@ void UserModel::setPhone(const QString &phone) {
     if (m_phone != phone) {
         m_phone = phone;
         Q_EMIT phoneChanged();
+    }
+}
+
+QString UserModel::DeviceID() const {
+    return m_deviceID;
+}
+
+void UserModel::setDeviceID(const QString &deviceID) {
+    if (m_deviceID != deviceID) {
+        m_deviceID = deviceID;
+        Q_EMIT deviceIDChanged();
     }
 }

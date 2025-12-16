@@ -1,3 +1,4 @@
+// bookinghistory.qml (edited)
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -5,7 +6,6 @@ import QtQuick.Layouts 1.15
 Page {
     id: bookingHistoryPage
     objectName: "BookingHistory"
-
     property StackView stackViewRef
 
     Component.onCompleted: {
@@ -86,13 +86,15 @@ Page {
                             color: "#ffebee"
                             border.color: "#880e4f"
                             border.width: 1
+
                             Text {
                                 anchors.centerIn: parent
-                                text: UserController.getFirstName() && UserController.getLastName() ? 
+                                text: UserController.getFirstName() && UserController.getLastName() ?
                                       UserController.getFirstName()[0].toUpperCase() + UserController.getLastName()[0].toUpperCase() : "NA"
                                 color: "#880e4f"
                                 font.bold: true
                             }
+
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
@@ -148,58 +150,61 @@ Page {
 
                 Repeater {
                     model: bookingModel
-
                     delegate: RowLayout {
                         width: parent.width
                         spacing: 5
                         height: 40
 
-                        Text { 
-                            text: bookingId 
-                            font.pixelSize: 15 
-                            color: "#333" 
-                            horizontalAlignment: Text.AlignHCenter 
-                            verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 150 
+                        Text {
+                            text: bookingId
+                            font.pixelSize: 15
+                            color: "#333"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.preferredWidth: 150
                         }
-                        Text { 
-                            text: checkIn 
-                            font.pixelSize: 15 
-                            color: "#333" 
-                            horizontalAlignment: Text.AlignHCenter 
-                            verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 140 
+
+                        Text {
+                            text: checkIn
+                            font.pixelSize: 15
+                            color: "#333"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.preferredWidth: 140
                         }
-                        Text { 
-                            text: checkOut 
-                            font.pixelSize: 15 
-                            color: "#333" 
-                            horizontalAlignment: Text.AlignHCenter 
-                            verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 140 
+
+                        Text {
+                            text: checkOut
+                            font.pixelSize: 15
+                            color: "#333"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.preferredWidth: 140
                         }
-                        Text { 
-                            text: guest 
-                            font.pixelSize: 15 
-                            color: "#333" 
-                            horizontalAlignment: Text.AlignHCenter 
-                            verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 150 
+
+                        Text {
+                            text: guest
+                            font.pixelSize: 15
+                            color: "#333"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.preferredWidth: 150
                         }
-                        Text { 
-                            text: price ? Number(price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ" 
-                            font.pixelSize: 15 
-                            font.bold: true 
-                            color: "#c0392b" 
-                            horizontalAlignment: Text.AlignHCenter 
-                            verticalAlignment: Text.AlignVCenter 
-                            Layout.preferredWidth: 120 
+
+                        Text {
+                            text: price ? Number(price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ"
+                            font.pixelSize: 15
+                            font.bold: true
+                            color: "#c0392b"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.preferredWidth: 120
                         }
+
                         Button {
                             id: actionButton
                             width: 120
                             height: 36
-
                             property date now: new Date()
                             property date ci: new Date(checkInDate)
                             property date co: new Date(checkOutDate)
@@ -253,9 +258,15 @@ Page {
                                 if (text === "Huỷ") {
                                     UserController.cancelBooking(bookingCode, roomId, "cancel")
                                 } else if (text === "Check In") {
-                                    UserController.cancelBooking(bookingCode, roomId, "checkIn")
+                                    faceAuthDialog.actionType = "checkIn"
+                                    faceAuthDialog.bookingCode = bookingCode
+                                    faceAuthDialog.roomId = roomId
+                                    faceAuthDialog.open()
                                 } else if (text === "Check Out") {
-                                    UserController.cancelBooking(bookingCode, roomId, "checkOut")
+                                    faceAuthDialog.actionType = "checkOut"
+                                    faceAuthDialog.bookingCode = bookingCode
+                                    faceAuthDialog.roomId = roomId
+                                    faceAuthDialog.open()
                                 }
                             }
                         }
@@ -291,6 +302,7 @@ Page {
                                     font.bold: true
                                     color: "#2c3e50"
                                 }
+
                                 Text {
                                     text: "Thank you for choosing our services!"
                                     font.pixelSize: 14
@@ -306,6 +318,7 @@ Page {
                                 color: "#d94a38"
                                 radius: 4
                             }
+
                             contentItem: Text {
                                 text: "Book now"
                                 color: "white"
@@ -313,6 +326,7 @@ Page {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                             onClicked: {
                                 stackViewRef.push("qrc:/Pkg/MVC/Views/Booking.qml", {
                                     stackViewRef: stackViewRef
@@ -435,6 +449,7 @@ Page {
         x: parent.width - width - 40
         y: 70
         width: 340
+
         contentItem: Rectangle {
             width: parent.width
             color: "#ffffff"
@@ -448,7 +463,7 @@ Page {
                 spacing: 12
 
                 Text {
-                    text: UserController.getFirstName() && UserController.getLastName() ? 
+                    text: UserController.getFirstName() && UserController.getLastName() ?
                           UserController.getFirstName() + " " + UserController.getLastName() : "Guest"
                     font.bold: true
                     font.pixelSize: 16
@@ -465,15 +480,18 @@ Page {
                     radius: 4
                     Layout.fillWidth: true
                     height: 32
+
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: 6
                         spacing: 6
+
                         Text {
                             text: "\u2714"
                             font.pixelSize: 14
                             color: "#c2185b"
                         }
+
                         Text {
                             text: "Bạn đã nhận được khuyến mãi 10%"
                             font.pixelSize: 12
@@ -504,5 +522,10 @@ Page {
             errorDialog.text = errorMsg;
             errorDialog.open();
         }
+    }
+
+    // ===== THÊM FACE AUTH DIALOG =====
+    FaceAuthDialog {
+        id: faceAuthDialog
     }
 }
