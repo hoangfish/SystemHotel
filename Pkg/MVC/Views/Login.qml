@@ -17,7 +17,7 @@ Item {
         Qt.callLater(() => {
             console.log("Login.qml: Starting camera via callLater()");
             UserController.setIsLoginMode(true);  // THÊM: Bật mode login khi mở camera
-            CamThreadService.startProducer()
+            CamThreadService.startConsumerByID(0)
             CamThreadService.startConsumerByID(1)
         })
     }
@@ -26,8 +26,8 @@ Item {
         if (!visible) {
             console.log("Login.qml: Stopping camera");
             UserController.setIsLoginMode(false);  // THÊM: Tắt mode khi rời trang
+            CamThreadService.stopConsumerByID(0)
             CamThreadService.stopConsumerByID(1)
-            CamThreadService.stopProducer()
         }
     }
 
@@ -70,14 +70,14 @@ Item {
                 Image {
                     id: avatarImgProvider
                     anchors.fill: parent
-                    source: "image://live/confacecheck"
+                    source: "image://live/ui"
                     fillMode: Image.PreserveAspectFit
                     cache: false
                     asynchronous: false
                     property bool counter: false
                     function reload() {
                         counter = !counter
-                        source = "image://live/confacecheck?id=" + counter
+                        source = "image://live/ui?id=" + counter
                     }
 
                     Connections {
@@ -416,8 +416,9 @@ Item {
         target: UserController
         function onFaceLoginSuccess() {
             console.log("Login.qml: Stopping camera");
+            CamThreadService.stopConsumerByID(0)
             CamThreadService.stopConsumerByID(1)
-            CamThreadService.stopProducer()
+            //CamThreadService.stopProducer()
             loginSuccess()
         }
     }

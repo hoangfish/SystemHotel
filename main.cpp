@@ -16,6 +16,7 @@
 #include "Middlewares/ImgProvider/inc/ImageProvider.h"
 #include "Middlewares/ImgProvider/inc/ImageStreamObserver.h"
 #include "Middlewares/ImgProvider/inc/ConFaceCheck.h"
+#include "Middlewares/ImgProvider/inc/UIFrameConsumer.h"
 #include "ComputingServ/FaceMesh/inc/FaceMeshService.h"
 
 int main(int argc, char *argv[])
@@ -23,6 +24,7 @@ int main(int argc, char *argv[])
     qDebug() << "QRC list:" << QDir(":/Device").entryList();
     QGuiApplication app(argc, argv);
     ImageProvider * liveImageProvider(new ImageProvider);
+    CamThreadMgr::getInstance()->setCameraIndex(0);
     QQuickStyle::setStyle("Material");
 
     LOG(LogLevel::INFO, "========================================");
@@ -31,12 +33,18 @@ int main(int argc, char *argv[])
 
     // Khởi động camera ngay từ đầu
     CamThreadMgr::getInstance()->setCameraIndex(0);
+     auto uiConsumer = std::make_unique<UIFrameConsumer>();
+    uiConsumer->setConsumerName("UIPreview");
+    uiConsumer->setConsumerId(0);
+    uiConsumer->setSleepTime(0);              // không delay để UI mượt
+    CamThreadMgr::getInstance()->addConsumer(std::move(uiConsumer));
+
     std::unique_ptr<Consumer<cv::Mat>> conFaceCheck = std::make_unique<ConFaceCheckIpml>();
-    conFaceCheck->setSleepTime(0);
+    conFaceCheck->setSleepTime(50);
     conFaceCheck->setConsumerName("conFaceCheck");
     conFaceCheck->setConsumerId(1);
     CamThreadMgr::getInstance()->addConsumer(std::move(conFaceCheck));
-    //CamThreadMgr::getInstance()->startProducer();
+    CamThreadMgr::getInstance()->startProducer();
 
     QQmlApplicationEngine engine;
 

@@ -17,6 +17,6 @@ void ConFaceCheckIpml::processElement(cv::Mat &element) {
         Q_EMIT VideoStreamer::getInstance().loginSuccess();
         AuthService::getInstance()->setLogined(true);
     }
-    QImage img = QImage(eCopy.data, eCopy.cols, eCopy.rows, QImage::Format_RGB888).rgbSwapped();
-    Q_EMIT VideoStreamer::getInstance().newImage(img, this->id);
+    //QImage img = QImage(eCopy.data, eCopy.cols, eCopy.rows, QImage::Format_RGB888).rgbSwapped();
+    //Q_EMIT VideoStreamer::getInstance().newImage(img, this->id);
 }

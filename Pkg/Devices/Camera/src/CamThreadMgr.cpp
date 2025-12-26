@@ -62,7 +62,9 @@ void CamThreadMgr::stopProducer() {
 }
 
 void CamThreadMgr::startProducer() {
-    this->safeQueue = std::make_shared<SafeQueue<cv::Mat>>(MAX_QUEUE_SIZE);
+    //this->safeQueue = std::make_shared<SafeQueue<cv::Mat>>(MAX_QUEUE_SIZE);
+    this->safeQueue = std::make_shared<SafeQueue<cv::Mat>>(1);
+
     if (producer) {
         LOG(LogLevel::INFO,"startProducer");
         producer->run();

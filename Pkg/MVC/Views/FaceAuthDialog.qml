@@ -45,8 +45,8 @@ Dialog {
                 else if (actionType === "checkOut")
                     UserController.cancelBooking(bookingCode, roomId, "checkOut")
 
+                CamThreadService.stopConsumerByID(0)
                 CamThreadService.stopConsumerByID(1)
-                CamThreadService.stopProducer()
                 successTimer.start()
             } else {
                 statusText.text = "Không khớp khuôn mặt. Vui lòng thử lại..."
@@ -84,13 +84,13 @@ Dialog {
                     id: avatarImgProvider
                     property bool counter: false
                     anchors.fill: parent
-                    source: "image://live/confacecheck"
+                    source: "image://live/ui"
                     fillMode: Image.PreserveAspectFit
                     cache: false
                     asynchronous: false
                     function reload() {
                         counter = !counter
-                        source = "image://live/confacecheck?id=" + counter
+                        source = "image://live/ui?id=" + counter
                     }
                 }
 
@@ -176,15 +176,15 @@ Dialog {
     onOpened: {
         statusText.text = "Đang khởi động camera..."
         statusText.color = "orange"
-        CamThreadService.startProducer()
+        CamThreadService.startConsumerByID(0)
         CamThreadService.startConsumerByID(1)
         statusText.text = "Vui lòng nhìn vào camera..."
         statusText.color = "#3498db"
     }
 
     onClosed: {
+        CamThreadService.stopConsumerByID(0)
         CamThreadService.stopConsumerByID(1)
-        CamThreadService.stopProducer()
     }
 
     Timer {
