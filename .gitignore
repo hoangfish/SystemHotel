@@ -3,7 +3,6 @@
 # -------------------------
 build/
 DB/
-libs/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
