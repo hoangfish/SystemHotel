@@ -12,20 +12,25 @@ ApplicationWindow {
     StackView {
         id: stackView
         anchors.fill: parent
-        initialItem: "qrc:/Pkg/MVC/Views/MainIntro.qml"
+        initialItem: "qrc:/Pkg/MVC/Views/MainIntro.qml"  // Giữ nguyên nếu bạn có intro riêng, hoặc thay bằng Login nếu không cần
 
         onCurrentItemChanged: {
+            // ==================== MainIntro ====================
             if (stackView.currentItem && stackView.currentItem.objectName === "MainIntro") {
                 let intro = stackView.currentItem
                 intro.openLogin.connect(() => {
                     stackView.push("qrc:/Pkg/MVC/Views/Login.qml")
                 })
+                // THÊM: Xử lý nút Đăng ký → mở Register.qml
+                intro.openRegister.connect(() => {
+                    stackView.push("qrc:/Pkg/MVC/Views/Register.qml")
+                })
             }
+            // ==================== Login ====================
             if (stackView.currentItem && stackView.currentItem.objectName === "Login") {
                 let login = stackView.currentItem
                 login.loginSuccess.connect(() => {
-                    // ✅ FIX CUỐI: Clear hết stack cũ (xóa sạch Login + MainIntro) → push Booking mới
-                    delayTimer.start()
+                    delayTimer.start() // Clear stack rồi vào Booking
                 })
                 login.adminLoginSuccess.connect(() => {
                     stackView.clear()
@@ -34,6 +39,17 @@ ApplicationWindow {
                     })
                 })
             }
+            // ==================== Booking ====================
+            if (stackView.currentItem && stackView.currentItem.objectName === "Booking") {
+                let booking = stackView.currentItem
+                // Thêm nếu cần signals khác
+            }
+            // ==================== Places (Others) ====================
+            if (stackView.currentItem && stackView.currentItem.objectName === "Places") {
+                let places = stackView.currentItem
+                // Thêm nếu cần signals khác
+            }
+            // ==================== Dashboard (nếu có) ====================
             if (stackView.currentItem && stackView.currentItem.objectName === "Dashboard") {
                 let dash = stackView.currentItem
                 dash.navigateToBooking.connect(() => stackView.push("qrc:/Pkg/MVC/Views/Booking.qml"))
@@ -45,23 +61,23 @@ ApplicationWindow {
         }
     }
 
-    // Timer delay push Booking sau khi clear stack
+    // Timer để delay một chút trước khi clear stack và push Booking (tránh lỗi QML)
     Timer {
         id: delayTimer
         interval: 300
         repeat: false
         onTriggered: {
-            stackView.clear()  // Xóa sạch stack cũ
+            stackView.clear()
             stackView.push("qrc:/Pkg/MVC/Views/Booking.qml", {stackViewRef: stackView})
         }
     }
 
-    // Connections logout khi ở Booking (an toàn với currentItem)
+    // Xử lý logout từ Booking (an toàn với currentItem thay đổi)
     Connections {
         target: stackView.currentItem
         ignoreUnknownSignals: true
         function onLogoutSuccess() {
-            if (stackView.currentItem && stackView.currentItem.objectName === "Booking") {
+            if (stackView.currentItem && (stackView.currentItem.objectName === "Booking" || stackView.currentItem.objectName === "Places")) {
                 stackView.clear()
                 stackView.push("qrc:/Pkg/MVC/Views/Login.qml")
             }
@@ -73,5 +89,7 @@ ApplicationWindow {
         UserModel = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; UserModel {}', this);
         AdminController = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; AdminController {}', this);
         AdminModel = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; AdminModel {}', this);
+        // Thêm: Tạo PlacesController
+        PlacesController = Qt.createQmlObject('import QUANLYKHACHSAN 1.0; PlacesController {}', this);
     }
 }

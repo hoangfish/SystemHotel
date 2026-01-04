@@ -1,0 +1,168 @@
+// Pkg/MVC/Controllers/src/PlacesController.cpp
+
+#include "../inc/PlacesController.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+#include <QUrlQuery>
+#include <cmath>  // cho sin, cos, atan2
+
+const double HOTEL_LAT = 10.75991;      // 227 Nguyễn Văn Cừ, Quận 5, TP.HCM
+const double HOTEL_LNG = 106.68285;
+const int    RADIUS_METERS = 5000;      // 5km xung quanh khách sạn
+
+// Hàm tính khoảng cách Haversine (km)
+double haversine(double lat1, double lon1, double lat2, double lon2) {
+    const double R = 6371.0;  // Bán kính Trái Đất (km)
+    double dLat = (lat2 - lat1) * M_PI / 180.0;
+    double dLon = (lon2 - lon1) * M_PI / 180.0;
+    double a = sin(dLat/2) * sin(dLat/2) +
+               cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) *
+               sin(dLon/2) * sin(dLon/2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return R * c;
+}
+
+// Static instance
+PlacesController* PlacesController::instance = nullptr;
+
+PlacesController::PlacesController(QObject *parent) : QObject(parent)
+{
+    // Không cần khởi tạo gì thêm
+}
+
+void PlacesController::getNearbyPlaces()
+{
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+
+    // Overpass API public endpoint
+    QString baseUrl = "https://overpass-api.de/api/interpreter";
+
+    // Overpass QL query: tìm cafe, nhà hàng, công viên, điểm du lịch, khu vui chơi trong bán kính 5km
+    QString query = QStringLiteral(
+        "[out:json][timeout:30];"
+        "("
+        "  node[\"amenity\"~\"cafe|restaurant|bar\"](around:%1,%2,%3);"
+        "  way[\"amenity\"~\"cafe|restaurant|bar\"](around:%1,%2,%3);"
+        "  node[\"tourism\"~\"attraction|theme_park|museum\"](around:%1,%2,%3);"
+        "  way[\"tourism\"~\"attraction|theme_park|museum\"](around:%1,%2,%3);"
+        "  node[\"leisure\"~\"park|playground|amusement_arcade|stadium\"](around:%1,%2,%3);"
+        "  way[\"leisure\"~\"park|playground|amusement_arcade|stadium\"](around:%1,%2,%3);"
+        ");"
+        "out center body;"
+        ">;"
+        "out skel qt;"
+    ).arg(RADIUS_METERS).arg(HOTEL_LAT).arg(HOTEL_LNG);
+
+    // Encode query để gửi POST
+    QByteArray postData = query.toUtf8();
+
+    QUrl url(baseUrl);
+    QNetworkRequest request(url);
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QNetworkReply *reply = manager->post(request, postData);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Overpass API - Network error:" << reply->errorString();
+            Q_EMIT placesFetchFailed("Lỗi mạng: " + reply->errorString());
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray rawData = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(rawData);
+
+        if (doc.isNull() || !doc.isObject()) {
+            qDebug() << "Overpass API - Invalid JSON response";
+            Q_EMIT placesFetchFailed("Không nhận được dữ liệu hợp lệ");
+            reply->deleteLater();
+            return;
+        }
+
+        QJsonArray elements = doc.object()["elements"].toArray();
+        QVariantList resultList;
+
+        for (const QJsonValue &val : elements) {
+            QJsonObject elem = val.toObject();
+
+            // Bỏ qua các element không có tags
+            if (!elem.contains("tags")) continue;
+            QJsonObject tags = elem["tags"].toObject();
+
+            QString name = tags["name"].toString();
+            if (name.isEmpty()) name = tags["name:en"].toString();
+            if (name.isEmpty()) name = "Địa điểm không tên";
+
+            // Xác định loại địa điểm để làm desc
+            QString typeDesc;
+            if (tags["amenity"].toString().contains("cafe")) typeDesc = "Cà phê";
+            else if (tags["amenity"].toString().contains("restaurant")) typeDesc = "Nhà hàng";
+            else if (tags["amenity"].toString().contains("bar")) typeDesc = "Quán bar";
+            else if (tags["tourism"].toString().contains("attraction")) typeDesc = "Điểm du lịch";
+            else if (tags["tourism"].toString().contains("museum")) typeDesc = "Bảo tàng";
+            else if (tags["leisure"].toString().contains("park")) typeDesc = "Công viên";
+            else if (tags["leisure"].toString().contains("playground")) typeDesc = "Sân chơi";
+            else typeDesc = "Địa điểm giải trí";
+
+            // Địa chỉ (nếu có)
+            QString addr = tags["addr:full"].toString();
+            if (addr.isEmpty()) {
+                QString street = tags["addr:street"].toString();
+                QString housenumber = tags["addr:housenumber"].toString();
+                if (!street.isEmpty()) addr = (housenumber + " " + street).trimmed();
+            }
+
+            // Tọa độ: ưu tiên center (cho way/relation), fallback lat/lon của node
+            double lat = 0.0, lon = 0.0;
+            if (elem.contains("center")) {
+                QJsonObject center = elem["center"].toObject();
+                lat = center["lat"].toDouble();
+                lon = center["lon"].toDouble();
+            } else {
+                lat = elem["lat"].toDouble();
+                lon = elem["lon"].toDouble();
+            }
+
+            if (lat == 0.0 || lon == 0.0) continue;  // Bỏ qua nếu không có tọa độ
+
+            double distKm = haversine(HOTEL_LAT, HOTEL_LNG, lat, lon);
+
+            QVariantMap map;
+            map["name"] = name;
+            map["desc"] = typeDesc + (addr.isEmpty() ? "" : " • " + addr);
+            map["addr"] = addr.isEmpty() ? "Quận 5 và lân cận, TP.HCM" : addr;
+            map["dist"] = QString("%1 km").arg(distKm, 0, 'f', 1);
+            map["img"] = "qrc:/Pkg/MVC/Views/images/default_place.png";  // Placeholder ảnh
+
+            resultList.append(map);
+        }
+
+        // Sắp xếp theo khoảng cách gần nhất
+        std::sort(resultList.begin(), resultList.end(), [](const QVariant &a, const QVariant &b) {
+            QString da = a.toMap()["dist"].toString().remove(" km");
+            QString db = b.toMap()["dist"].toString().remove(" km");
+            return da.toDouble() < db.toDouble();
+        });
+
+        // Giới hạn tối đa 20 địa điểm
+        if (resultList.size() > 20) {
+            resultList = resultList.mid(0, 20);
+        }
+
+        if (resultList.isEmpty()) {
+            Q_EMIT placesFetchFailed("Không tìm thấy địa điểm nào gần đây");
+        } else {
+            Q_EMIT placesFetched(resultList);
+        }
+
+        reply->deleteLater();
+    });
+}

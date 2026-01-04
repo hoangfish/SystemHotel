@@ -6,17 +6,15 @@ Page {
     id: mainIntro
     objectName: "MainIntro"
     signal openLogin
-
+    signal openRegister  // THÊM: Signal mới cho nút Đăng ký
     width: 1280
     height: 800
-
     Component.onCompleted: {
         // Gọi C++ để đọc DeviceId.txt và fetch user + load ảnh khuôn mặt qua BootApp.init(userId)
         Qt.callLater(function() {
         UserController.readDeviceIdAndFetchUser()
     })
     }
-
     // ===== TASKBAR =====
     Rectangle {
         id: topBar
@@ -59,6 +57,21 @@ Page {
                 }
             }
             Item { Layout.fillWidth: true }
+            // THÊM: Nút Đăng ký (bên trái nút Đăng nhập, cùng style)
+            Button {
+                text: "Đăng ký"
+                font.bold: true
+                font.pixelSize: 14
+                background: Rectangle { color: "#FF5722"; radius: 6 }
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font: parent.font
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                onClicked: openRegister()
+            }
             Button {
                 text: "Đăng nhập"
                 font.bold: true
@@ -75,7 +88,6 @@ Page {
             }
         }
     }
-
     // ===== SCROLLABLE CONTENT =====
     Flickable {
         id: flickableContent

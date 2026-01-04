@@ -8,6 +8,7 @@
 #include "MVC/Controller/inc/UserController.h"
 #include "MVC/Controller/inc/RoomController.h"
 #include "MVC/Controller/inc/AdminController.h"
+#include "MVC/Controller/inc/PlacesController.h"
 // Các service từ dự án face
 #include "Booting/inc/BootingApp.h"
 #include "Camera/inc/CamThreadMgr.h"
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("UserController", UserController::getInstance());
     engine.rootContext()->setContextProperty("RoomController", RoomController::getInstance());
     engine.rootContext()->setContextProperty("AdminController", AdminController::getInstance());
+    engine.rootContext()->setContextProperty("PlacesController", PlacesController::getInstance());
     engine.rootContext()->setContextProperty("FaceCheckService", FaceCheckService::getInstance());
     engine.rootContext()->setContextProperty("CamThreadService", CamThreadMgr::getInstance());
     engine.rootContext()->setContextProperty("AuthService", AuthService::getInstance());

@@ -7,6 +7,8 @@
         <file>MainIntro.qml</file>
         <file>Login.qml</file>
         <file>Booking.qml</file>
+        <file>Register.qml</file>
+        <file>Places.qml</file>
         <file>Payment.qml</file>
         <file>CreateRoom.qml</file>
         <file>BookingHistory.qml</file>
@@ -16,6 +18,7 @@
         <file>images/lobby.png</file>
         <file>images/outside_look.png</file>
         <file>images/pool.png</file>
+        <file>images/room4.png</file>
         <file>images/wifi.png</file>
         <file>images/buffet.png</file>
         <file>images/freshseafood.png</file>

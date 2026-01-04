@@ -28,11 +28,11 @@ Item {
     property var selectedRoom: ({})
 
     // Thêm cho phân trang và lọc
-    property string currentFilter: "RoomType"  // Giá trị filter mặc định
-    property int itemsPerPage: 10  // Số phòng mỗi trang
-    property int currentPage: 1    // Trang hiện tại
-    property int totalPages: 0     // Tổng số trang (tính toán sau)
-    property int maxVisiblePages: 5  // Số trang hiển thị tối đa trong thanh phân trang
+    property string currentFilter: "RoomType" // Giá trị filter mặc định
+    property int itemsPerPage: 10 // Số phòng mỗi trang
+    property int currentPage: 1 // Trang hiện tại
+    property int totalPages: 0 // Tổng số trang (tính toán sau)
+    property int maxVisiblePages: 5 // Số trang hiển thị tối đa trong thanh phân trang
 
     Component.onCompleted: {
         RoomController.getRooms();
@@ -41,14 +41,14 @@ Item {
     Connections {
         target: RoomController
         function onRoomsFetched(rooms) {
-            console.log("Rooms fetched or updated via signal, length: " + rooms.length);  // Debug log để check signal trigger
+            console.log("Rooms fetched or updated via signal, length: " + rooms.length); // Debug log để check signal trigger
             roomModel.clear();
             for (var i = 0; i < rooms.length; i++) {
                 var room = rooms[i];
-                room.visible = true;  // Thêm property visible mặc định true
+                room.visible = true; // Thêm property visible mặc định true
                 roomModel.append(room);
             }
-            updateVisibleItems();  // Cập nhật visible ngay sau khi load/update
+            updateVisibleItems(); // Cập nhật visible ngay sau khi load/update
         }
         function onRoomFetchFailed(errorMsg) {
             console.log("Failed to fetch rooms:", errorMsg);
@@ -71,8 +71,8 @@ Item {
             errorDialog.open();
         }
         function onRoomListChanged() {
-            console.log("Room list changed, updating visible");  // Debug
-            updateVisibleItems();  // Thêm để update pagination mà không reset model
+            console.log("Room list changed, updating visible"); // Debug
+            updateVisibleItems(); // Thêm để update pagination mà không reset model
         }
     }
 
@@ -99,7 +99,6 @@ Item {
     // Hàm cập nhật visible cho items dựa trên filter và page
     function updateVisibleItems() {
         var visibleCount = 0;
-
         // Loop 1: Đếm tổng số items khớp filter
         for (var i = 0; i < roomModel.count; i++) {
             var item = roomModel.get(i);
@@ -108,17 +107,14 @@ Item {
                 visibleCount++;
             }
         }
-
         // Tính tổng trang
         totalPages = Math.ceil(visibleCount / itemsPerPage);
-        if (totalPages === 0) totalPages = 1;  // Ít nhất 1 trang
-        if (currentPage > totalPages) currentPage = totalPages;  // Reset nếu cần
-
+        if (totalPages === 0) totalPages = 1; // Ít nhất 1 trang
+        if (currentPage > totalPages) currentPage = totalPages; // Reset nếu cần
         // Reset visibleCount cho page
         visibleCount = 0;
         var startIndex = (currentPage - 1) * itemsPerPage;
         var endIndex = startIndex + itemsPerPage;
-
         // Loop 2: Set visible chỉ cho items khớp filter và trong range page
         for (var j = 0; j < roomModel.count; j++) {
             var item2 = roomModel.get(j);
@@ -129,7 +125,7 @@ Item {
             } else {
                 item2.visible = false;
             }
-            roomModel.set(j, item2);  // Cập nhật model
+            roomModel.set(j, item2); // Cập nhật model
         }
         console.log("Updated items: totalPages=" + totalPages + ", currentPage=" + currentPage + ", filter=" + currentFilter);
     }
@@ -144,18 +140,15 @@ Item {
         y: (parent.height - height) / 2
         width: 300
         property alias text: errorText.text
-
         contentItem: Rectangle {
             color: "#ffffff"
             radius: 8
             border.color: "#ccc"
             border.width: 1
-
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 16
                 spacing: 12
-
                 Text {
                     id: errorText
                     font.pixelSize: 14
@@ -163,7 +156,6 @@ Item {
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                 }
-
                 Button {
                     text: "OK"
                     Layout.fillWidth: true
@@ -173,7 +165,7 @@ Item {
         }
     }
 
-    // ========== HEADER ==========
+    // ========== HEADER (THAY ĐỔI: Giống Places.qml) ==========
     Rectangle {
         id: header
         anchors.top: parent.top
@@ -182,18 +174,48 @@ Item {
         height: 60
         color: "#d32f2f"
         z: 1
-
         RowLayout {
             anchors.fill: parent
             anchors.margins: 16
             spacing: 16
+            Row {
+                spacing: 40
+                Layout.alignment: Qt.AlignVCenter
+                Text {
+                    text: "Room"
+                    color: "white"
+                    font.pixelSize: 20
+                    font.bold: true
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            // Ở Room rồi, không làm gì hoặc reload nếu cần
+                            console.log("Already in Room");
+                        }
+                    }
+                }
+                Text {
+                    text: "Others"
+                    color: "white"
+                    font.pixelSize: 20
+                    font.bold: true
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            stackViewRef.replace("qrc:/Pkg/MVC/Views/Places.qml", {stackViewRef: stackViewRef});
+                        }
+                    }
+                }
+            }
+            Item { Layout.fillWidth: true }
             Text {
                 text: "Muong Thanh Luxury HCM"
                 color: "white"
                 font.pixelSize: 20
                 font.bold: true
             }
-            Item { Layout.fillWidth: true }
             Rectangle {
                 id: avatar
                 width: 40
@@ -204,7 +226,7 @@ Item {
                 border.width: 1
                 Text {
                     anchors.centerIn: parent
-                    text: UserController.getFirstName() && UserController.getLastName() ? 
+                    text: UserController.getFirstName() && UserController.getLastName() ?
                           UserController.getFirstName()[0].toUpperCase() + UserController.getLastName()[0].toUpperCase() : "NA"
                     color: "#880e4f"
                     font.bold: true
@@ -227,7 +249,6 @@ Item {
         height: 60
         color: "transparent"
         z: 1
-
         Text {
             anchors.centerIn: parent
             text: "Chọn phòng"
@@ -235,7 +256,6 @@ Item {
             font.bold: true
             color: "#333"
         }
-
         Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
@@ -263,17 +283,14 @@ Item {
         border.color: "#ddd"
         border.width: 1
         z: 3
-
         anchors.top: titleBar.bottom
         anchors.topMargin: 20
         anchors.right: parent.right
         anchors.rightMargin: 24
-
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 12
             spacing: 8
-
             Rectangle {
                 Layout.fillWidth: true
                 height: 48
@@ -286,7 +303,6 @@ Item {
                     color: "#333"
                 }
             }
-
             Rectangle {
                 Layout.fillWidth: true
                 height: 48
@@ -295,7 +311,6 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 8
                     spacing: 8
-
                     Text {
                         text: "Phòng:"
                         font.pixelSize: 14
@@ -312,7 +327,6 @@ Item {
                     }
                 }
             }
-
             Rectangle {
                 Layout.fillWidth: true
                 height: 36
@@ -325,19 +339,16 @@ Item {
                     color: "#333"
                 }
             }
-
             // Add date inputs
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
-
                 TextField {
                     id: checkInInput
                     placeholderText: "Nhận phòng (DD/MM/YYYY)"
                     Layout.fillWidth: true
                     onTextChanged: calculateNights()
                 }
-
                 TextField {
                     id: checkOutInput
                     placeholderText: "Trả phòng (DD/MM/YYYY)"
@@ -345,7 +356,6 @@ Item {
                     onTextChanged: calculateNights()
                 }
             }
-
             // Display nights and dates if calculated
             ColumnLayout {
                 visible: nights > 0
@@ -372,7 +382,6 @@ Item {
                     }
                 }
             }
-
             Rectangle {
                 Layout.fillWidth: true
                 height: 36
@@ -386,7 +395,6 @@ Item {
                     color: "#333"
                 }
             }
-
             Rectangle {
                 Layout.fillWidth: true
                 height: 60
@@ -394,7 +402,6 @@ Item {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 4
-
                     Text {
                         text: nights > 0 ? Number(totalPrice).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : (selectedRoom.price ? Number(selectedRoom.price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ")
                         font.pixelSize: 24
@@ -403,7 +410,6 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         Layout.alignment: Qt.AlignHCenter
                     }
-
                     Button {
                         text: "Tiếp tục"
                         font.pixelSize: 22
@@ -450,28 +456,23 @@ Item {
         anchors.rightMargin: 24
         clip: true
         z: 0
-
         ScrollBar.vertical: ScrollBar {
             policy: ScrollBar.AsNeeded
             anchors.right: parent.right
         }
-
         Column {
             id: mainContent
             width: mainScroll.width
             spacing: 24
             anchors.topMargin: 8
-
             Row {
                 id: contentRow
                 width: mainContent.width
                 spacing: 0
-
                 Column {
                     id: leftColumn
                     width: mainScroll.width - bookingSummary.width - 48
                     spacing: 20
-
                     Rectangle {
                         width: leftColumn.width
                         height: 60
@@ -487,90 +488,77 @@ Item {
                                 Layout.preferredWidth: 166
                                 Layout.preferredHeight: 35
                                 model: ["RoomType", "single", "double", "family"]
-                                currentIndex: 0  // Mặc định chọn "RoomType"
+                                currentIndex: 0 // Mặc định chọn "RoomType"
                                 Layout.alignment: Qt.AlignVCenter
                                 onCurrentTextChanged: {
                                     currentFilter = currentText;
-                                    currentPage = 1;  // Reset về trang 1 khi filter thay đổi
+                                    currentPage = 1; // Reset về trang 1 khi filter thay đổi
                                     updateVisibleItems();
                                 }
                             }
                             Item { Layout.fillWidth: true }
                         }
                     }
-
                     Repeater {
                         model: roomModel
                         delegate: Rectangle {
                             width: leftColumn.width
-                            height: model.visible ? 220 : 0  // Height 0 nếu không visible
-                            visible: model.visible  // Sử dụng model.visible để lọc
+                            height: model.visible ? 220 : 0 // Height 0 nếu không visible
+                            visible: model.visible // Sử dụng model.visible để lọc
                             radius: 12
                             color: "#fff"
                             border.color: "#e8e2e2"
                             border.width: 1
-
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.margins: 16
                                 spacing: 16
-
                                 Rectangle {
                                     Layout.preferredWidth: leftColumn.width * 0.32
                                     Layout.fillHeight: true
                                     radius: 8
                                     clip: true
                                     color: "#f0f0f0"
-
                                     Image {
                                         anchors.fill: parent
                                         source: image
                                         fillMode: Image.PreserveAspectCrop
                                     }
                                 }
-
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: 6
-
                                     Text {
                                         text: roomId
                                         font.pixelSize: 20
                                         font.bold: true
                                     }
-
                                     Text {
                                         text: roomType.charAt(0).toUpperCase() + roomType.slice(1)
                                         font.pixelSize: 16
                                         color: "#444"
                                     }
-
                                     Text {
                                         text: description
                                         font.pixelSize: 14
                                         color: "#444"
                                         wrapMode: Text.WordWrap
                                     }
-
                                     RowLayout {
                                         spacing: 16
                                         Text { text: "👥 " + guests; font.pixelSize: 14 }
                                         Text { text: "📐 " + area; font.pixelSize: 14 }
                                     }
-
                                     RowLayout {
                                         Layout.fillWidth: true
                                         spacing: 16
-
                                         Text {
                                             text: price ? Number(price).toLocaleString(Qt.locale("vi_VN"), 'f', 0) + " đ" : "0 đ"
                                             font.pixelSize: 18
                                             font.bold: true
                                             color: "#d32f2f"
                                         }
-
                                         Item { Layout.fillWidth: true }
-
                                         Button {
                                             text: status === "available" ? "Chọn" : "Đã đặt"
                                             width: 100
@@ -596,12 +584,10 @@ Item {
                             }
                         }
                     }
-
                     // Thanh phân trang
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
                         spacing: 8
-
                         Button {
                             text: "Trước"
                             enabled: currentPage > 1
@@ -610,7 +596,6 @@ Item {
                                 updateVisibleItems();
                             }
                         }
-
                         // Hiển thị tối đa 5 nút phân trang
                         Repeater {
                             model: {
@@ -642,7 +627,6 @@ Item {
                                 }
                             }
                         }
-
                         Button {
                             text: "Sau"
                             enabled: currentPage < totalPages
@@ -652,15 +636,12 @@ Item {
                             }
                         }
                     }
-
                     Rectangle { width: leftColumn.width; height: 16; color: "transparent" }
                 }
-
                 Item {
                     width: bookingSummary.width + 48
                 }
             }
-
             Rectangle {
                 id: footer
                 width: mainContent.width
@@ -669,12 +650,10 @@ Item {
                 radius: 0
                 border.width: 0
                 anchors.horizontalCenter: mainContent.horizontalCenter
-
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: 24
                     spacing: 48
-
                     ColumnLayout {
                         spacing: 8
                         Label {
@@ -689,7 +668,6 @@ Item {
                             wrapMode: Text.WordWrap
                         }
                     }
-
                     ColumnLayout {
                         spacing: 8
                         Label {
@@ -703,7 +681,6 @@ Item {
                         Label { text: "• Nguyễn Khang Hy"; color: "#ffffff" }
                         Label { text: "• Lê Đinh Nguyên Phong"; color: "#ffffff" }
                     }
-
                     ColumnLayout {
                         spacing: 8
                         Label {
@@ -716,7 +693,6 @@ Item {
                         MouseArea {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: Qt.openUrlExternally("mailto:nkhy2414@clc.fitus.edu.vn")
-
                             Label {
                                 text: "✉ nkhy2414@clc.fitus.edu.vn"
                                 color: "#00ccff"
@@ -743,25 +719,21 @@ Item {
             radius: 8
             border.color: "#ccc"
             border.width: 1
-
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 16
                 spacing: 12
-
                 Text {
-                    text: UserController.getFirstName() && UserController.getLastName() ? 
+                    text: UserController.getFirstName() && UserController.getLastName() ?
                           UserController.getFirstName() + " " + UserController.getLastName() : "Guest"
                     font.bold: true
                     font.pixelSize: 16
                 }
-
                 Text {
                     text: UserController.getPhone() ? UserController.getPhone() : "No phone"
                     color: "#666"
                     font.pixelSize: 14
                 }
-
                 Rectangle {
                     color: "#fce4ec"
                     radius: 4
@@ -783,7 +755,6 @@ Item {
                         }
                     }
                 }
-
                 Button {
                     text: "Lịch sử đặt phòng"
                     Layout.fillWidth: true
@@ -795,7 +766,6 @@ Item {
                         UserController.getBookingHistory();
                     }
                 }
-
                 Button {
                     text: "Đăng xuất"
                     Layout.fillWidth: true
